@@ -114,7 +114,7 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
 
   <ul class="sidebar-menu">
     <li class="menu-label">Menu</li>
-    <li><a href="#" class="menu-link active"><i class="bi bi-grid-1x2-fill"></i> Tableau de bord</a></li>
+    <li><a href="index.html" class="menu-link active"><i class="bi bi-grid-1x2-fill"></i> Tableau de bord</a></li>
 
     <li class="menu-label">Gestion</li>
     <li>
@@ -122,9 +122,9 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
         <i class="bi bi-calendar2-week"></i> Planning <i class="bi bi-chevron-right arrow"></i>
       </button>
       <ul class="sub-menu collapse" id="sub-planning">
-        <li><a href="#"><i class="bi bi-calendar-check"></i> Rendez-vous</a></li>
-        <li><a href="#"><i class="bi bi-calendar-range"></i> Emploi du temps</a></li>
-        <li><a href="#"><i class="bi bi-bell"></i> Rappels SMS</a></li>
+        <li><a href="rendez-vous.html"><i class="bi bi-calendar-check"></i> Rendez-vous</a></li>
+        <li><a href="emploi-du-temps.html"><i class="bi bi-calendar-range"></i> Emploi du temps</a></li>
+        <li><a href="rappels-sms.html"><i class="bi bi-bell"></i> Rappels SMS</a></li>
       </ul>
     </li>
     <li>
@@ -132,13 +132,13 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
         <i class="bi bi-people"></i> Patients <i class="bi bi-chevron-right arrow"></i>
       </button>
       <ul class="sub-menu collapse" id="sub-patients">
-        <li><a href="#"><i class="bi bi-person-plus"></i> Nouveau patient</a></li>
-        <li><a href="#"><i class="bi bi-journal-text"></i> Dossiers médicaux</a></li>
-        <li><a href="#"><i class="bi bi-search"></i> Rechercher</a></li>
+        <li><a href="nouveau-patient.html"><i class="bi bi-person-plus"></i> Nouveau patient</a></li>
+        <li><a href="dossiers-medicaux.html"><i class="bi bi-journal-text"></i> Dossiers médicaux</a></li>
+        <li><a href="rechercher.html"><i class="bi bi-search"></i> Rechercher</a></li>
       </ul>
     </li>
-    <li><a href="#" class="menu-link"><i class="bi bi-person-gear"></i> Employés</a></li>
-    <li><a href="#" class="menu-link"><i class="bi bi-folder2-open"></i> Documents</a></li>
+    <li><a href="employes.html" class="menu-link"><i class="bi bi-person-gear"></i> Employés</a></li>
+    <li><a href="documents.html" class="menu-link"><i class="bi bi-folder2-open"></i> Documents</a></li>
 
     <li class="menu-label">Administration</li>
     <li>
@@ -146,13 +146,13 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
         <i class="bi bi-cash-stack"></i> Facturation <i class="bi bi-chevron-right arrow"></i>
       </button>
       <ul class="sub-menu collapse" id="sub-facturation">
-        <li><a href="#"><i class="bi bi-receipt"></i> Factures</a></li>
-        <li><a href="#"><i class="bi bi-credit-card"></i> Paiements</a></li>
-        <li><a href="#"><i class="bi bi-graph-up-arrow"></i> Rapports</a></li>
+        <li><a href="factures.html"><i class="bi bi-receipt"></i> Factures</a></li>
+        <li><a href="paiements.html"><i class="bi bi-credit-card"></i> Paiements</a></li>
+        <li><a href="rapports.html"><i class="bi bi-graph-up-arrow"></i> Rapports</a></li>
       </ul>
     </li>
-    <li><a href="#" class="menu-link"><i class="bi bi-bar-chart-line"></i> Rapports</a></li>
-    <li><a href="#" class="menu-link"><i class="bi bi-gear"></i> Paramètres</a></li>
+    <li><a href="rapports.html" class="menu-link"><i class="bi bi-bar-chart-line"></i> Rapports</a></li>
+    <li><a href="parametres.html" class="menu-link"><i class="bi bi-gear"></i> Paramètres</a></li>
 
     <li class="menu-label">Info</li>
     <li><a href="../index.html" class="menu-link"><i class="bi bi-arrow-left-circle"></i> Retour Portfolio</a></li>
@@ -258,7 +258,7 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
       <div class="card card-panel">
         <div class="panel-head">
           <h6><i class="bi bi-calendar-day me-2 text-primary"></i>Rendez-vous du jour</h6>
-          <a href="#">Voir planning →</a>
+          <a href="emploi-du-temps.html">Voir planning →</a>
         </div>
         <div class="table-responsive">
           <table class="table mb-0">
@@ -279,7 +279,7 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
       <div class="card card-panel">
         <div class="panel-head">
           <h6><i class="bi bi-bar-chart-line me-2 text-primary"></i>Activité — 7 derniers jours</h6>
-          <a href="#">Rapports →</a>
+          <a href="rapports.html">Rapports →</a>
         </div>
         <div class="p-3">
           <canvas id="activityChart" height="140"></canvas>
@@ -301,7 +301,7 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
     <div class="card card-panel mb-4">
       <div class="panel-head">
         <h6><i class="bi bi-person-gear me-2 text-primary"></i>Employés</h6>
-        <a href="#">Gérer l'équipe →</a>
+        <a href="employes.html">Gérer l'équipe →</a>
       </div>
       <div class="table-responsive">
         <table class="table mb-0">
@@ -321,7 +321,7 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
     <div class="card card-panel mb-4">
       <div class="panel-head">
         <h6><i class="bi bi-folder2-open me-2 text-primary"></i>Documents récents</h6>
-        <a href="#">Tous les fichiers →</a>
+        <a href="documents.html">Tous les fichiers →</a>
       </div>
       <div class="table-responsive">
         <table class="table mb-0">

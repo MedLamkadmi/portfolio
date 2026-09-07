@@ -4,9 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dossiers médicaux — KinéoGest</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 :root{--sidebar-bg:#1e1e2f;--sidebar-hover:#2a2a40;--sidebar-active:#3b3b5c;--sidebar-section:rgba(255,255,255,.4);--sidebar-link:rgba(255,255,255,.6);--accent:#0f766e;--accent-light:#ccfbf1}
@@ -54,9 +53,14 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
 .badge-gray{background:#f1f5f9;color:#64748b}
 .badge-rh{background:#ede9fe;color:#7c3aed}
 .badge-danger{background:#fee2e2;color:#dc2626}
+.action-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 6px}
+.action-view{color:var(--accent)}.action-edit{color:#64748b}.action-del{color:#dc2626}
 .emp-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-right:8px;vertical-align:middle}
 .demo-notice{background:#fef3c7;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:10px 16px;font-size:13px;display:flex;align-items:center;gap:10px}
+.inv-view-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #e9ecef;font-size:13.5px}
+.inv-view-row:last-child{border-bottom:none}
 .main-footer{padding:18px 24px;border-top:1px solid #e9ecef;font-size:12px;color:#636e72;text-align:center}
+.notes-cell{max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:992px){#sidebar{transform:translateX(-100%)}#sidebar.show{transform:translateX(0)}#content{margin-left:0}.hamburger{display:block}}
 </style>
 </head>
@@ -124,45 +128,39 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
         <h1>Dossiers médicaux</h1>
         <small>Dossiers de tous les patients enregistrés</small>
       </div>
+      <a href="#" onclick="exportCSV();return false;" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download me-1"></i> Exporter</a>
     </div>
 
     <div class="demo-notice mb-3">
-      <i class="bi bi-info-circle-fill"></i>
-      <span><b>Mode démo</b> — Ces données sont fictives. Dans la version finale, elles seront issues de votre base patients.</span>
+      <i class="bi bi-info-circle"></i>
+      <span>Maquette de démonstration — données fictives. Vos modifications sont enregistrées localement, bouton <b>Réinitialiser</b> pour restaurer la démo.</span>
     </div>
 
     <div class="row g-3 mb-3">
-      <div class="col-md-6">
-        <input type="text" class="form-control" placeholder="🔍 Rechercher par nom, prénom…">
+      <div class="col-md-4">
+        <div class="input-group">
+          <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+          <input type="text" id="fSearch" class="form-control" placeholder="Rechercher par nom, prénom…" oninput="renderTable()">
+        </div>
       </div>
       <div class="col-md-3">
-        <select class="form-select">
-          <option selected>Tous les traitements</option>
-          <option>Rééducation genou</option>
-          <option>Kiné dos</option>
-          <option>Kiné respiratoire</option>
-          <option>Rééducation sportive</option>
-          <option>Masso-kinésithérapie</option>
-          <option>Rééducation pédiatrique</option>
-          <option>Neurologie</option>
+        <select id="fTraitement" class="form-select" onchange="renderTable()">
+          <option value="">Tous les traitements</option>
         </select>
       </div>
       <div class="col-md-3">
-        <select class="form-select">
-          <option selected>Tous les thérapeutes</option>
-          <option>Rachid Bensaid</option>
-          <option>Salma Lahlou</option>
-          <option>Amine Kadiri</option>
-          <option>Youssef Alaoui</option>
-          <option>Karim Benjelloun</option>
+        <select id="fTherapeute" class="form-select" onchange="renderTable()">
+          <option value="">Tous les thérapeutes</option>
         </select>
+      </div>
+      <div class="col-md-2 d-flex align-items-center justify-content-end">
+        <a href="#" onclick="KinoeUI.resetDemo('dossiers','Dossiers médicaux');return false;" style="color:#dc2626;font-size:13px"><i class="bi bi-arrow-counterclockwise me-1"></i>Réinitialiser</a>
       </div>
     </div>
 
     <div class="card-panel">
       <div class="panel-head">
-        <h6><i class="bi bi-journal-text me-2"></i>Dossiers patients</h6>
-        <a href="#">Exporter CSV</a>
+        <h6><i class="bi bi-journal-text me-2"></i>Dossiers patients <span class="badge bg-secondary ms-2" style="font-size:11px" id="dosCount">0</span></h6>
       </div>
       <div class="table-responsive">
         <table class="table table-hover mb-0">
@@ -174,132 +172,15 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
               <th>Traitement</th>
               <th>Thérapeute</th>
               <th>Notes</th>
-              <th>Actions</th>
+              <th style="width:90px">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td><span class="emp-avatar">KA</span> Kenza Alaoui</td>
-              <td>32 ans — F</td>
-              <td>05/09/2026</td>
-              <td><span class="badge-status badge-ok">Rééducation genou</span></td>
-              <td>Salma Lahlou</td>
-              <td class="text-muted" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Post-op TKA droite — semaine 6. Amplitude 0-110°.</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#636e72"><i class="bi bi-pencil-square"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><span class="emp-avatar">OH</span> Omar Haddad</td>
-              <td>45 ans — M</td>
-              <td>02/09/2026</td>
-              <td><span class="badge-status badge-warn">Kiné dos</span></td>
-              <td>Rachid Bensaid</td>
-              <td class="text-muted" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Lombalgie chronique — séances de renforcement.</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#636e72"><i class="bi bi-pencil-square"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><span class="emp-avatar">YT</span> Yasmine Tazi</td>
-              <td>28 ans — F</td>
-              <td>04/09/2026</td>
-              <td><span class="badge-status badge-ok">Rééducation sportive</span></td>
-              <td>Rachid Bensaid</td>
-              <td class="text-muted" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Entorse cheville G — reprise sportive prévue oct.</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#636e72"><i class="bi bi-pencil-square"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><span class="emp-avatar">MC</span> Mehdi Chraibi</td>
-              <td>38 ans — M</td>
-              <td>03/09/2026</td>
-              <td><span class="badge-status badge-warn">Kiné dos</span></td>
-              <td>Karim Benjelloun</td>
-              <td class="text-muted" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Hernie discale L4-L5 — drainage + mobilisation.</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#636e72"><i class="bi bi-pencil-square"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><span class="emp-avatar">IZ</span> Ilham Ziani</td>
-              <td>52 ans — F</td>
-              <td>04/09/2026</td>
-              <td><span class="badge-status badge-sms">Kiné respiratoire</span></td>
-              <td>Amine Kadiri</td>
-              <td class="text-muted" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">BPCO stade 2 — gainage thoracique, ventilation.</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#636e72"><i class="bi bi-pencil-square"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><span class="emp-avatar">NF</span> Nabil Fassi</td>
-              <td>41 ans — M</td>
-              <td>01/09/2026</td>
-              <td><span class="badge-status badge-ok">Masso-kinésithérapie</span></td>
-              <td>Salma Lahlou</td>
-              <td class="text-muted" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Tendinopathie supra-épineux — ondes de choc.</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#636e72"><i class="bi bi-pencil-square"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><span class="emp-avatar">FZ</span> Fatima Zahra</td>
-              <td>29 ans — F</td>
-              <td>06/09/2026</td>
-              <td><span class="badge-status badge-ok">Rééducation genou</span></td>
-              <td>Salma Lahlou</td>
-              <td class="text-muted" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Ligament croisé antérieur — renforcement quadriceps.</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#636e72"><i class="bi bi-pencil-square"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><span class="emp-avatar">AB</span> Ahmed Bennani</td>
-              <td>55 ans — M</td>
-              <td>28/08/2026</td>
-              <td><span class="badge-status badge-warn">Kiné dos</span></td>
-              <td>Rachid Bensaid</td>
-              <td class="text-muted" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Sténose lombaire —程序 progressive de marche.</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#636e72"><i class="bi bi-pencil-square"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><span class="emp-avatar">LI</span> Leila Idrissi</td>
-              <td>34 ans — F</td>
-              <td>30/08/2026</td>
-              <td><span class="badge-status badge-ok">Rééducation pédiatrique</span></td>
-              <td>Youssef Alaoui</td>
-              <td class="text-muted" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Accompagnement enfant — retard marche 18 mois.</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#636e72"><i class="bi bi-pencil-square"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><span class="emp-avatar">YA</span> Youssra Amrani</td>
-              <td>26 ans — F</td>
-              <td>06/09/2026</td>
-              <td><span class="badge-status badge-ok">Rééducation sportive</span></td>
-              <td>Rachid Bensaid</td>
-              <td class="text-muted" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Rupture coiffe rotateurs G — programme excentrique.</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#636e72"><i class="bi bi-pencil-square"></i></a>
-              </td>
-            </tr>
-          </tbody>
+          <tbody id="dosBody"></tbody>
         </table>
+        <div id="dosEmpty" class="text-center py-5" style="display:none">
+          <i class="bi bi-inbox" style="font-size:34px;color:#cbd5e1"></i>
+          <div class="mt-2 text-muted">Aucun dossier ne correspond aux filtres.</div>
+        </div>
       </div>
     </div>
 
@@ -309,6 +190,209 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
   </div>
 </div>
 
+<!-- ===== MODAL Modifier ===== -->
+<div class="modal fade" id="dosModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="dosModalTitle">Modifier le dossier</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="dsPatient">
+        <div class="row g-3">
+          <div class="col-4">
+            <label class="form-label">Âge</label>
+            <input id="dsAge" type="number" min="0" class="form-control">
+          </div>
+          <div class="col-4">
+            <label class="form-label">Sexe</label>
+            <select id="dsSexe" class="form-select">
+              <option>F</option><option>M</option>
+            </select>
+          </div>
+          <div class="col-4">
+            <label class="form-label">Dernière visite</label>
+            <input id="dsVisite" type="text" class="form-control" placeholder="07/09/2026">
+          </div>
+        </div>
+        <div class="row g-3 mt-0">
+          <div class="col-6">
+            <label class="form-label">Traitement</label>
+            <select id="dsTraitement" class="form-select"></select>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Thérapeute</label>
+            <select id="dsTherapeute" class="form-select"></select>
+          </div>
+        </div>
+        <div class="mt-3">
+          <label class="form-label">Notes cliniques</label>
+          <textarea id="dsNotes" class="form-control" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm" style="background:var(--accent);color:#fff" onclick="saveDossier()"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL Vue détaillée ===== -->
+<div class="modal fade" id="viewModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold" id="viewNom"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="inv-view-row"><span class="text-muted">Âge / Sexe</span><span class="fw-semibold" id="viewAge"></span></div>
+        <div class="inv-view-row"><span class="text-muted">Dernière visite</span><span class="fw-semibold" id="viewVisite"></span></div>
+        <div class="inv-view-row"><span class="text-muted">Traitement</span><span id="viewTraitement"></span></div>
+        <div class="inv-view-row"><span class="text-muted">Thérapeute</span><span class="fw-semibold" id="viewTherapeute"></span></div>
+        <div class="mt-3">
+          <div class="text-muted" style="font-size:12px;font-weight:600">Notes cliniques</div>
+          <div id="viewNotes" class="mt-1" style="font-size:13.5px"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+  <div id="ktoast" class="toast align-items-center" role="status">
+    <div class="d-flex">
+      <div class="toast-body" id="ktoastBody"></div>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/db.js"></script>
+<script src="js/ui.js"></script>
+<script>
+var TRAITEMENTS = [
+  'Rééducation genou', 'Kiné dos', 'Rééducation sportive', 'Kiné respiratoire',
+  'Masso-kinésithérapie', 'Rééducation pédiatrique', 'Neurologie',
+  'Rééducation cheville', 'Rééducation main', 'Masso-thérapie', 'Suivi post-opératoire'
+];
+
+function renderTable() {
+  var q = document.getElementById('fSearch').value.trim().toLowerCase();
+  var fTraitement = document.getElementById('fTraitement').value;
+  var fTherapeute = document.getElementById('fTherapeute').value;
+  var list = KinoeDB.dossiers().filter(function (d) {
+    if (fTraitement && d.traitement !== fTraitement) return false;
+    if (fTherapeute && d.therapeuteId !== fTherapeute) return false;
+    if (q && d.patient && d.patient.nom.toLowerCase().indexOf(q) === -1) return false;
+    return true;
+  });
+  var body = document.getElementById('dosBody');
+  var empty = document.getElementById('dosEmpty');
+  document.getElementById('dosCount').textContent = list.length;
+  body.innerHTML = '';
+  empty.style.display = list.length ? 'none' : 'block';
+  list.forEach(function (d) {
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><span class="emp-avatar">' + (d.patient ? d.patient.initiales : '—') + '</span>' + (d.patient ? d.patient.nom : '(inconnu)') + '</td>' +
+      '<td>' + d.age + ' ans — ' + d.sexe + '</td>' +
+      '<td>' + d.derniereVisite + '</td>' +
+      '<td>' + KinoeUI.badgeSpecialite(d.traitement) + '</td>' +
+      '<td>' + (d.therapeute ? d.therapeute.nom : '—') + '</td>' +
+      '<td class="text-muted notes-cell" title="' + d.notes.replace(/"/g, '&quot;') + '">' + d.notes + '</td>' +
+      '<td style="white-space:nowrap">' +
+        '<button class="action-btn action-view" title="Voir" onclick="openView(\'' + d.patientId + '\')"><i class="bi bi-eye"></i></button>' +
+        '<button class="action-btn action-edit" title="Modifier" onclick="openEdit(\'' + d.patientId + '\')"><i class="bi bi-pencil-square"></i></button>' +
+      '</td>';
+    body.appendChild(tr);
+  });
+}
+
+function fillSelects() {
+  var ft = document.getElementById('fTraitement');
+  TRAITEMENTS.forEach(function (t) {
+    var o = document.createElement('option'); o.value = t; o.textContent = t; ft.appendChild(o);
+  });
+  var st = document.getElementById('dsTraitement');
+  st.innerHTML = '';
+  TRAITEMENTS.forEach(function (t) {
+    var o = document.createElement('option'); o.value = t; o.textContent = t; st.appendChild(o);
+  });
+  var fth = document.getElementById('fTherapeute');
+  var sth = document.getElementById('dsTherapeute');
+  KinoeDB.employes().forEach(function (e) {
+    if (e.role === 'Kinésithérapeute') {
+      var o1 = document.createElement('option'); o1.value = e.id; o1.textContent = e.nom; fth.appendChild(o1);
+      var o2 = document.createElement('option'); o2.value = e.id; o2.textContent = e.nom; sth.appendChild(o2);
+    }
+  });
+}
+
+function openEdit(patientId) {
+  var d = KinoeDB.dossier(patientId);
+  if (!d) return;
+  document.getElementById('dosModalTitle').textContent = 'Modifier le dossier — ' + (d.patient ? d.patient.nom : patientId);
+  document.getElementById('dsPatient').value = patientId;
+  document.getElementById('dsAge').value = d.age;
+  document.getElementById('dsSexe').value = d.sexe;
+  document.getElementById('dsVisite').value = d.derniereVisite;
+  document.getElementById('dsTraitement').value = d.traitement;
+  document.getElementById('dsTherapeute').value = d.therapeuteId;
+  document.getElementById('dsNotes').value = d.notes;
+  KinoeUI.openModal('dosModal');
+}
+
+function saveDossier() {
+  var patientId = document.getElementById('dsPatient').value;
+  var data = {
+    age: document.getElementById('dsAge').value,
+    sexe: document.getElementById('dsSexe').value,
+    derniereVisite: document.getElementById('dsVisite').value.trim(),
+    traitement: document.getElementById('dsTraitement').value,
+    therapeuteId: document.getElementById('dsTherapeute').value,
+    notes: document.getElementById('dsNotes').value.trim()
+  };
+  if (!data.derniereVisite) { KinoeUI.toast('Date de visite requise.'); return; }
+  KinoeDB.updateDossier(patientId, data);
+  KinoeUI.closeModal('dosModal');
+  KinoeUI.toast('Dossier mis à jour.');
+  renderUI();
+}
+
+function openView(patientId) {
+  var d = KinoeDB.dossier(patientId);
+  if (!d) return;
+  document.getElementById('viewNom').textContent = d.patient ? d.patient.nom : patientId;
+  document.getElementById('viewAge').textContent = d.age + ' ans — ' + d.sexe;
+  document.getElementById('viewVisite').textContent = d.derniereVisite;
+  document.getElementById('viewTraitement').innerHTML = KinoeUI.badgeSpecialite(d.traitement);
+  document.getElementById('viewTherapeute').textContent = d.therapeute ? d.therapeute.nom : '—';
+  document.getElementById('viewNotes').textContent = d.notes || '—';
+  KinoeUI.openModal('viewModal');
+}
+
+function exportCSV() {
+  var rows = KinoeDB.dossiers().map(function (d) {
+    return [d.patient ? d.patient.nom : '', d.age, d.sexe, d.derniereVisite, d.traitement,
+            d.therapeute ? d.therapeute.nom : '', d.notes];
+  });
+  KinoeUI.csvExport('dossiers-medicaux-kineogest.csv',
+    ['Patient', 'Âge', 'Sexe', 'Dernière visite', 'Traitement', 'Thérapeute', 'Notes'], rows);
+}
+
+function renderUI() {
+  renderTable();
+}
+fillSelects();
+renderUI();
+</script>
 </body>
 </html>

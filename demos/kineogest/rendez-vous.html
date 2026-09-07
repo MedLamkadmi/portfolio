@@ -6,7 +6,6 @@
 <title>Rendez-vous — KinéoGest</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 :root{--sidebar-bg:#1e1e2f;--sidebar-hover:#2a2a40;--sidebar-active:#3b3b5c;--sidebar-section:rgba(255,255,255,.4);--sidebar-link:rgba(255,255,255,.6);--accent:#0f766e;--accent-light:#ccfbf1}
@@ -54,8 +53,12 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
 .badge-gray{background:#f1f5f9;color:#64748b}
 .badge-rh{background:#ede9fe;color:#7c3aed}
 .badge-danger{background:#fee2e2;color:#dc2626}
+.action-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 6px}
+.action-view{color:var(--accent)}.action-edit{color:#64748b}.action-del{color:#dc2626}
 .emp-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-right:8px;vertical-align:middle}
 .demo-notice{background:#fef3c7;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:10px 16px;font-size:13px;display:flex;align-items:center;gap:10px}
+.inv-view-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #e9ecef;font-size:13.5px}
+.inv-view-row:last-child{border-bottom:none}
 .main-footer{padding:18px 24px;border-top:1px solid #e9ecef;font-size:12px;color:#636e72;text-align:center}
 @media(max-width:992px){#sidebar{transform:translateX(-100%)}#sidebar.show{transform:translateX(0)}#content{margin-left:0}.hamburger{display:block}}
 </style>
@@ -136,12 +139,15 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
         <h1>Rendez-vous</h1>
         <small>Gestion des rendez-vous du cabinet</small>
       </div>
-      <a href="#" class="btn btn-primary btn-sm" style="background:var(--accent);border-color:var(--accent)"><i class="bi bi-plus-lg me-1"></i> Nouveau rendez-vous</a>
+      <div class="d-flex gap-2">
+        <a href="#" onclick="exportCSV();return false;" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download me-1"></i> Exporter</a>
+        <button class="btn btn-sm" style="background:var(--accent);border-color:var(--accent);color:#fff" data-bs-toggle="modal" data-bs-target="#rdvModal" onclick="openRdvModal()"><i class="bi bi-plus-lg me-1"></i> Nouveau rendez-vous</button>
+      </div>
     </div>
 
     <div class="demo-notice mb-3">
       <i class="bi bi-info-circle"></i>
-      Ceci est une maquette de démonstration. Les données affichées sont entièrement fictives.
+      Ceci est une maquette de démonstration. Les données affichées sont entièrement fictives. Vos modifications sont enregistrées localement — bouton <b>Réinitialiser</b> pour restaurer la démo.
     </div>
 
     <div class="card-panel mb-4">
@@ -152,21 +158,18 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
         <div class="row g-3">
           <div class="col-md-3 col-sm-6">
             <label class="form-label form-label-sm" style="font-size:12px;font-weight:600">Date</label>
-            <input type="date" class="form-control form-control-sm" value="2026-09-07">
+            <input type="text" id="fDate" class="form-control form-control-sm" placeholder="07/09/2026" oninput="renderTable()">
           </div>
           <div class="col-md-3 col-sm-6">
             <label class="form-label form-label-sm" style="font-size:12px;font-weight:600">Thérapeute</label>
-            <select class="form-select form-select-sm">
-              <option selected>Tous</option>
-              <option>Rachid Bensaid</option>
-              <option>Salma Lahlou</option>
-              <option>Amine Kadiri</option>
+            <select id="fTherapeute" class="form-select form-select-sm" onchange="renderTable()">
+              <option value="">Tous</option>
             </select>
           </div>
           <div class="col-md-3 col-sm-6">
             <label class="form-label form-label-sm" style="font-size:12px;font-weight:600">Statut</label>
-            <select class="form-select form-select-sm">
-              <option selected>Tous</option>
+            <select id="fStatut" class="form-select form-select-sm" onchange="renderTable()">
+              <option value="">Tous</option>
               <option>Confirmé</option>
               <option>En attente</option>
               <option>Annulé</option>
@@ -174,7 +177,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
           </div>
           <div class="col-md-3 col-sm-6">
             <label class="form-label form-label-sm" style="font-size:12px;font-weight:600">Rechercher</label>
-            <input type="text" class="form-control form-control-sm" placeholder="Nom du patient…">
+            <input type="text" id="fSearch" class="form-control form-control-sm" placeholder="Nom du patient…" oninput="renderTable()">
           </div>
         </div>
       </div>
@@ -182,8 +185,8 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
 
     <div class="card-panel">
       <div class="panel-head">
-        <h6>Liste des rendez-vous <span class="badge bg-secondary ms-2" style="font-size:11px">10</span></h6>
-        <a href="#">Exporter <i class="bi bi-download"></i></a>
+        <h6>Liste des rendez-vous <span class="badge bg-secondary ms-2" style="font-size:11px" id="rdvCount">0</span></h6>
+        <a href="#" onclick="KinoeUI.resetDemo('rendezvous','Rendez-vous');return false;" style="color:#dc2626"><i class="bi bi-arrow-counterclockwise me-1"></i>Réinitialiser</a>
       </div>
       <div class="table-responsive">
         <table class="table table-hover mb-0">
@@ -194,132 +197,15 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
               <th>Thérapeute</th>
               <th>Traitement</th>
               <th>Statut</th>
-              <th>Actions</th>
+              <th style="width:110px">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td><strong>08:00</strong><br><small class="text-muted">Lun 07/09</small></td>
-              <td><span class="emp-avatar">KA</span>Kenza Alaoui</td>
-              <td>Rachid Bensaid</td>
-              <td>Rééducation du genou</td>
-              <td><span class="badge-status badge-ok">Confirmé</span></td>
-              <td>
-                <a href="#" class="text-muted me-2" title="Voir"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-muted me-2" title="Modifier"><i class="bi bi-pencil"></i></a>
-                <a href="#" class="text-danger" title="Supprimer"><i class="bi bi-trash"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>08:30</strong><br><small class="text-muted">Lun 07/09</small></td>
-              <td><span class="emp-avatar">OH</span>Omar Haddad</td>
-              <td>Salma Lahlou</td>
-              <td>Kiné du dos</td>
-              <td><span class="badge-status badge-ok">Confirmé</span></td>
-              <td>
-                <a href="#" class="text-muted me-2" title="Voir"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-muted me-2" title="Modifier"><i class="bi bi-pencil"></i></a>
-                <a href="#" class="text-danger" title="Supprimer"><i class="bi bi-trash"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>09:00</strong><br><small class="text-muted">Lun 07/09</small></td>
-              <td><span class="emp-avatar">YT</span>Yasmine Tazi</td>
-              <td>Amine Kadiri</td>
-              <td>Masso-thérapie</td>
-              <td><span class="badge-status badge-warn">En attente</span></td>
-              <td>
-                <a href="#" class="text-muted me-2" title="Voir"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-muted me-2" title="Modifier"><i class="bi bi-pencil"></i></a>
-                <a href="#" class="text-danger" title="Supprimer"><i class="bi bi-trash"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>10:00</strong><br><small class="text-muted">Mar 08/09</small></td>
-              <td><span class="emp-avatar">MC</span>Mehdi Chraibi</td>
-              <td>Rachid Bensaid</td>
-              <td>Suivi post-opératoire</td>
-              <td><span class="badge-status badge-ok">Confirmé</span></td>
-              <td>
-                <a href="#" class="text-muted me-2" title="Voir"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-muted me-2" title="Modifier"><i class="bi bi-pencil"></i></a>
-                <a href="#" class="text-danger" title="Supprimer"><i class="bi bi-trash"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>10:30</strong><br><small class="text-muted">Mar 08/09</small></td>
-              <td><span class="emp-avatar">IZ</span>Ilham Ziani</td>
-              <td>Salma Lahlou</td>
-              <td>Kiné respiratoire</td>
-              <td><span class="badge-status badge-danger">Annulé</span></td>
-              <td>
-                <a href="#" class="text-muted me-2" title="Voir"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-muted me-2" title="Modifier"><i class="bi bi-pencil"></i></a>
-                <a href="#" class="text-danger" title="Supprimer"><i class="bi bi-trash"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>11:00</strong><br><small class="text-muted">Mer 09/09</small></td>
-              <td><span class="emp-avatar">NF</span>Nabil Fassi</td>
-              <td>Amine Kadiri</td>
-              <td>Rééducation épaule</td>
-              <td><span class="badge-status badge-ok">Confirmé</span></td>
-              <td>
-                <a href="#" class="text-muted me-2" title="Voir"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-muted me-2" title="Modifier"><i class="bi bi-pencil"></i></a>
-                <a href="#" class="text-danger" title="Supprimer"><i class="bi bi-trash"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>14:00</strong><br><small class="text-muted">Mer 09/09</small></td>
-              <td><span class="emp-avatar">FZ</span>Fatima Zahra</td>
-              <td>Rachid Bensaid</td>
-              <td>Rééducation cheville</td>
-              <td><span class="badge-status badge-warn">En attente</span></td>
-              <td>
-                <a href="#" class="text-muted me-2" title="Voir"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-muted me-2" title="Modifier"><i class="bi bi-pencil"></i></a>
-                <a href="#" class="text-danger" title="Supprimer"><i class="bi bi-trash"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>09:30</strong><br><small class="text-muted">Jeu 10/09</small></td>
-              <td><span class="emp-avatar">AB</span>Ahmed Bennani</td>
-              <td>Salma Lahlou</td>
-              <td>Kiné pédiatrique</td>
-              <td><span class="badge-status badge-ok">Confirmé</span></td>
-              <td>
-                <a href="#" class="text-muted me-2" title="Voir"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-muted me-2" title="Modifier"><i class="bi bi-pencil"></i></a>
-                <a href="#" class="text-danger" title="Supprimer"><i class="bi bi-trash"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>15:00</strong><br><small class="text-muted">Ven 11/09</small></td>
-              <td><span class="emp-avatar">LI</span>Leila Idrissi</td>
-              <td>Amine Kadiri</td>
-              <td>Drainage lymphatique</td>
-              <td><span class="badge-status badge-danger">Annulé</span></td>
-              <td>
-                <a href="#" class="text-muted me-2" title="Voir"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-muted me-2" title="Modifier"><i class="bi bi-pencil"></i></a>
-                <a href="#" class="text-danger" title="Supprimer"><i class="bi bi-trash"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>16:00</strong><br><small class="text-muted">Sam 12/09</small></td>
-              <td><span class="emp-avatar">YA</span>Youssra Amrani</td>
-              <td>Rachid Bensaid</td>
-              <td>Rééducation main</td>
-              <td><span class="badge-status badge-ok">Confirmé</span></td>
-              <td>
-                <a href="#" class="text-muted me-2" title="Voir"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-muted me-2" title="Modifier"><i class="bi bi-pencil"></i></a>
-                <a href="#" class="text-danger" title="Supprimer"><i class="bi bi-trash"></i></a>
-              </td>
-            </tr>
-          </tbody>
+          <tbody id="rdvsBody"></tbody>
         </table>
+        <div id="rdvsEmpty" class="text-center py-5" style="display:none">
+          <i class="bi bi-inbox" style="font-size:34px;color:#cbd5e1"></i>
+          <div class="mt-2 text-muted">Aucun rendez-vous ne correspond aux filtres.</div>
+        </div>
       </div>
     </div>
 
@@ -329,6 +215,259 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
   </div>
 </div>
 
+<!-- ===== MODAL Créer / Modifier ===== -->
+<div class="modal fade" id="rdvModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="rdvModalTitle">Nouveau rendez-vous</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="rId">
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="form-label">Date</label>
+            <input id="rDate" type="text" class="form-control" placeholder="07/09/2026">
+          </div>
+          <div class="col-6">
+            <label class="form-label">Heure</label>
+            <input id="rHeure" type="text" class="form-control" placeholder="08:00">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Patient</label>
+          <select id="rPatient" class="form-select"></select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Thérapeute</label>
+          <select id="rTherapeute" class="form-select"></select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Traitement</label>
+          <input id="rTraitement" type="text" class="form-control" placeholder="Rééducation du genou">
+        </div>
+        <div>
+          <label class="form-label">Statut</label>
+          <select id="rStatut" class="form-select">
+            <option>Confirmé</option>
+            <option>En attente</option>
+            <option>Annulé</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm" style="background:var(--accent);color:#fff" onclick="saveRdv()"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL Vue détaillée ===== -->
+<div class="modal fade" id="viewModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold" id="viewTitle"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="inv-view-row"><span class="text-muted">Date & heure</span><span class="fw-semibold" id="viewDateTime"></span></div>
+        <div class="inv-view-row"><span class="text-muted">Patient</span><span class="fw-semibold" id="viewPatient"></span></div>
+        <div class="inv-view-row"><span class="text-muted">Thérapeute</span><span class="fw-semibold" id="viewTherapeute"></span></div>
+        <div class="inv-view-row"><span class="text-muted">Traitement</span><span id="viewTraitement"></span></div>
+        <div class="inv-view-row"><span class="text-muted">Statut</span><span id="viewStatut"></span></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL Suppression ===== -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold" style="color:#dc2626"><i class="bi bi-trash me-1"></i>Supprimer le rendez-vous</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Voulez-vous vraiment supprimer ce rendez-vous ?
+        <div class="text-muted mt-2" id="deleteInfo"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm btn-danger" onclick="confirmDelete()"><i class="bi bi-trash me-1"></i>Supprimer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+  <div id="ktoast" class="toast align-items-center" role="status">
+    <div class="d-flex">
+      <div class="toast-body" id="ktoastBody"></div>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/db.js"></script>
+<script src="js/ui.js"></script>
+<script>
+var editingId = null;
+
+function renderTable() {
+  var fDate = document.getElementById('fDate').value.trim();
+  var fTherapeute = document.getElementById('fTherapeute').value;
+  var fStatut = document.getElementById('fStatut').value;
+  var q = document.getElementById('fSearch').value.trim().toLowerCase();
+  var list = KinoeDB.rendezvous().filter(function (r) {
+    if (fDate && r.date !== fDate) return false;
+    if (fTherapeute && r.therapeuteId !== fTherapeute) return false;
+    if (fStatut && r.statut !== fStatut) return false;
+    if (q && r.patient && r.patient.nom.toLowerCase().indexOf(q) === -1) return false;
+    return true;
+  });
+  var body = document.getElementById('rdvsBody');
+  var empty = document.getElementById('rdvsEmpty');
+  document.getElementById('rdvCount').textContent = list.length;
+  body.innerHTML = '';
+  empty.style.display = list.length ? 'none' : 'block';
+  list.forEach(function (r) {
+    var tr = document.createElement('tr');
+    var day = KinoeUI.jourCourt(r.date);
+    tr.innerHTML =
+      '<td><strong>' + r.heure + '</strong><br><small class="text-muted">' + day + ' ' + r.date + '</small></td>' +
+      '<td><span class="emp-avatar">' + (r.patient ? r.patient.initiales : '—') + '</span>' + (r.patient ? r.patient.nom : '(patient inconnu)') + '</td>' +
+      '<td>' + (r.therapeute ? r.therapeute.nom : '—') + '</td>' +
+      '<td>' + KinoeUI.badgeSpecialite(r.traitement) + '</td>' +
+      '<td>' + KinoeUI.badgeRdv(r.statut) + '</td>' +
+      '<td style="white-space:nowrap">' +
+        '<button class="action-btn action-view" title="Voir" onclick="openView(\'' + r.id + '\')"><i class="bi bi-eye"></i></button>' +
+        '<button class="action-btn action-edit" title="Modifier" onclick="openEdit(\'' + r.id + '\')"><i class="bi bi-pencil"></i></button>' +
+        '<button class="action-btn action-del" title="Supprimer" onclick="openDelete(\'' + r.id + '\')"><i class="bi bi-trash"></i></button>' +
+      '</td>';
+    body.appendChild(tr);
+  });
+}
+
+function fillSelects() {
+  var th = document.getElementById('fTherapeute');
+  th.innerHTML = '<option value="">Tous</option>';
+  var th2 = document.getElementById('rTherapeute');
+  th2.innerHTML = '';
+  KinoeDB.employes().forEach(function (e) {
+    if (e.role === 'Kinésithérapeute') {
+      var o = document.createElement('option');
+      o.value = e.id; o.textContent = e.nom;
+      th.appendChild(o); th2.appendChild(o.cloneNode(true));
+    }
+  });
+  var sel = document.getElementById('rPatient');
+  sel.innerHTML = '';
+  KinoeDB.patients().forEach(function (p) {
+    var o = document.createElement('option');
+    o.value = p.id; o.textContent = p.nom;
+    sel.appendChild(o);
+  });
+}
+
+function openRdvModal() {
+  editingId = null;
+  document.getElementById('rdvModalTitle').textContent = 'Nouveau rendez-vous';
+  document.getElementById('rId').value = '';
+  document.getElementById('rDate').value = '07/09/2026';
+  document.getElementById('rHeure').value = '09:00';
+  document.getElementById('rPatient').value = 'P001';
+  document.getElementById('rTherapeute').value = 'E001';
+  document.getElementById('rTraitement').value = '';
+  document.getElementById('rStatut').value = 'Confirmé';
+}
+
+function saveRdv() {
+  var data = {
+    date: document.getElementById('rDate').value.trim(),
+    heure: document.getElementById('rHeure').value.trim(),
+    patientId: document.getElementById('rPatient').value,
+    therapeuteId: document.getElementById('rTherapeute').value,
+    traitement: document.getElementById('rTraitement').value.trim(),
+    statut: document.getElementById('rStatut').value
+  };
+  if (!data.date || !data.heure) { KinoeUI.toast('Date et heure requises.'); return; }
+  if (!data.traitement) data.traitement = 'Séance de kinésithérapie';
+  if (editingId) {
+    KinoeDB.updateRendezVous(editingId, data);
+    KinoeUI.toast('Rendez-vous modifié.');
+  } else {
+    var rec = KinoeDB.addRendezVous(data);
+    KinoeUI.toast('Rendez-vous ' + rec.id + ' créé.');
+  }
+  KinoeUI.closeModal('rdvModal');
+  renderUI();
+}
+
+function openEdit(id) {
+  var r = KinoeDB.rendezVous(id);
+  if (!r) return;
+  editingId = id;
+  document.getElementById('rdvModalTitle').textContent = 'Modifier — ' + r.patient.nom;
+  document.getElementById('rId').value = r.id;
+  document.getElementById('rDate').value = r.date;
+  document.getElementById('rHeure').value = r.heure;
+  document.getElementById('rPatient').value = r.patientId;
+  document.getElementById('rTherapeute').value = r.therapeuteId;
+  document.getElementById('rTraitement').value = r.traitement;
+  document.getElementById('rStatut').value = r.statut;
+  KinoeUI.openModal('rdvModal');
+}
+
+function openView(id) {
+  var r = KinoeDB.rendezVous(id);
+  if (!r) return;
+  document.getElementById('viewTitle').textContent = 'Rendez-vous ' + r.id;
+  document.getElementById('viewDateTime').textContent = KinoeUI.jourCourt(r.date) + ' ' + r.date + ' à ' + r.heure;
+  document.getElementById('viewPatient').textContent = r.patient ? r.patient.nom : '—';
+  document.getElementById('viewTherapeute').textContent = r.therapeute ? r.therapeute.nom : '—';
+  document.getElementById('viewTraitement').innerHTML = KinoeUI.badgeSpecialite(r.traitement);
+  document.getElementById('viewStatut').innerHTML = KinoeUI.badgeRdv(r.statut);
+  KinoeUI.openModal('viewModal');
+}
+
+function openDelete(id) {
+  var r = KinoeDB.rendezVous(id);
+  if (!r) return;
+  document.getElementById('deleteInfo').textContent = (r.patient ? r.patient.nom : '—') + ' · ' + r.date + ' à ' + r.heure;
+  document.getElementById('deleteModal').dataset.id = id;
+  KinoeUI.openModal('deleteModal');
+}
+
+function confirmDelete() {
+  var id = document.getElementById('deleteModal').dataset.id;
+  KinoeDB.deleteRendezVous(id);
+  KinoeUI.closeModal('deleteModal');
+  KinoeUI.toast('Rendez-vous supprimé.');
+  renderUI();
+}
+
+function exportCSV() {
+  var rows = KinoeDB.rendezvous().map(function (r) {
+    return [r.date, r.heure, r.patient ? r.patient.nom : '', r.therapeute ? r.therapeute.nom : '', r.traitement, r.statut];
+  });
+  KinoeUI.csvExport('rendez-vous-kineogest.csv',
+    ['Date', 'Heure', 'Patient', 'Thérapeute', 'Traitement', 'Statut'], rows);
+}
+
+function renderUI() {
+  renderTable();
+}
+fillSelects();
+renderUI();
+</script>
 </body>
 </html>

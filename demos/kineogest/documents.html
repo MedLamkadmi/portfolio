@@ -4,9 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Documents — KinéoGest</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 :root{--sidebar-bg:#1e1e2f;--sidebar-hover:#2a2a40;--sidebar-active:#3b3b5c;--sidebar-section:rgba(255,255,255,.4);--sidebar-link:rgba(255,255,255,.6);--accent:#0f766e;--accent-light:#ccfbf1}
@@ -54,8 +53,13 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
 .badge-gray{background:#f1f5f9;color:#64748b}
 .badge-rh{background:#ede9fe;color:#7c3aed}
 .badge-danger{background:#fee2e2;color:#dc2626}
+.action-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 6px}
+.action-view{color:var(--accent)}.action-edit{color:#64748b}.action-del{color:#dc2626}
 .emp-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-right:8px;vertical-align:middle}
 .demo-notice{background:#fef3c7;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:10px 16px;font-size:13px;display:flex;align-items:center;gap:10px}
+.inv-view-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #e9ecef;font-size:13.5px}
+.inv-view-row:last-child{border-bottom:none}
+.doc-thumb{width:38px;height:38px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:17px;color:#fff}
 .main-footer{padding:18px 24px;border-top:1px solid #e9ecef;font-size:12px;color:#636e72;text-align:center}
 @media(max-width:992px){#sidebar{transform:translateX(-100%)}#sidebar.show{transform:translateX(0)}#content{margin-left:0}.hamburger{display:block}}
 </style>
@@ -124,38 +128,34 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
         <h1>Documents</h1>
         <small>Gestion de tous les documents du cabinet</small>
       </div>
-      <button class="btn" style="background:var(--accent);color:#fff;font-weight:600;font-size:13px">
-        <i class="bi bi-plus-lg me-1"></i> Nouveau document
-      </button>
+      <div class="d-flex gap-2">
+        <a href="#" onclick="exportCSV();return false;" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download me-1"></i> Exporter</a>
+        <button class="btn btn-sm" style="background:var(--accent);border-color:var(--accent);color:#fff" onclick="openDocModal()"><i class="bi bi-plus-lg me-1"></i> Nouveau document</button>
+      </div>
     </div>
 
     <div class="demo-notice mb-3">
-      <i class="bi bi-info-circle-fill"></i>
-      <span><b>Mode démo</b> — Ces données sont fictives. Dans la version finale, elles seront issues de votre coffre-fort numérique.</span>
+      <i class="bi bi-info-circle"></i>
+      <span>Maquette de démonstration — données fictives. Vos modifications sont enregistrées localement, bouton <b>Réinitialiser</b> pour restaurer la démo.</span>
     </div>
 
     <!-- Filters -->
     <div class="row g-3 mb-3">
       <div class="col-md-3">
-        <select class="form-select" style="font-size:13px">
-          <option selected>Tous les types</option>
-          <option>Ordonnance</option>
-          <option>Imagerie</option>
-          <option>RH</option>
-          <option>Bilan</option>
-          <option>Contrat</option>
+        <select id="fType" class="form-select" style="font-size:13px" onchange="renderTable()">
+          <option value="">Tous les types</option>
         </select>
       </div>
       <div class="col-md-3">
-        <input type="date" class="form-control" style="font-size:13px" value="2026-08-01">
+        <input type="text" id="fDateDebut" class="form-control" style="font-size:13px" placeholder="Du (JJ/MM/AAAA)" oninput="renderTable()">
       </div>
       <div class="col-md-3">
-        <input type="date" class="form-control" style="font-size:13px" value="2026-09-07">
+        <input type="text" id="fDateFin" class="form-control" style="font-size:13px" placeholder="Au (JJ/MM/AAAA)" oninput="renderTable()">
       </div>
       <div class="col-md-3">
         <div class="input-group">
           <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-          <input type="text" class="form-control" placeholder="Rechercher un document…" style="font-size:13px">
+          <input type="text" id="fSearch" class="form-control" placeholder="Rechercher un document…" style="font-size:13px" oninput="renderTable()">
         </div>
       </div>
     </div>
@@ -163,8 +163,8 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
     <!-- Table -->
     <div class="card-panel">
       <div class="panel-head">
-        <h6><i class="bi bi-folder2-open me-2"></i>Documents du cabinet</h6>
-        <a href="#">Exporter la liste</a>
+        <h6><i class="bi bi-folder2-open me-2"></i>Documents du cabinet <span class="badge bg-secondary ms-2" style="font-size:11px" id="docCount">0</span></h6>
+        <a href="#" onclick="KinoeUI.resetDemo('documents','Documents');return false;" style="color:#dc2626"><i class="bi bi-arrow-counterclockwise me-1"></i>Réinitialiser</a>
       </div>
       <div class="table-responsive">
         <table class="table table-hover mb-0">
@@ -175,156 +175,15 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
               <th>Type</th>
               <th>Date</th>
               <th>Taille</th>
-              <th>Actions</th>
+              <th style="width:120px">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td><i class="bi bi-file-earmark-text me-2" style="color:#dc2626"></i>Ordonnance — rééducation genou</td>
-              <td><span class="emp-avatar">KA</span> Kenza Alaoui</td>
-              <td><span class="badge-status badge-sms">Prescription</span></td>
-              <td>05/09/2026</td>
-              <td>245 Ko</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><i class="bi bi-file-earmark-image me-2" style="color:#0369a1"></i>Radiographie RX genou (D)</td>
-              <td><span class="emp-avatar">KA</span> Kenza Alaoui</td>
-              <td><span class="badge-status badge-gray">Imagerie</span></td>
-              <td>05/09/2026</td>
-              <td>1.2 Mo</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><i class="bi bi-file-earmark-person me-2" style="color:#7c3aed"></i>Contrat de travail — Amine Kadiri</td>
-              <td><span class="emp-avatar">AK</span> Amine Kadiri</td>
-              <td><span class="badge-status badge-rh">RH</span></td>
-              <td>01/09/2026</td>
-              <td>520 Ko</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><i class="bi bi-file-earmark-text me-2" style="color:#16a34a"></i>Compte rendu — bilan S1</td>
-              <td><span class="emp-avatar">OH</span> Omar Haddad</td>
-              <td><span class="badge-status badge-ok">Bilan</span></td>
-              <td>02/09/2026</td>
-              <td>180 Ko</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><i class="bi bi-file-earmark-person me-2" style="color:#7c3aed"></i>Attestation employé — Nadia Fikri</td>
-              <td><span class="emp-avatar">NF</span> Nadia Fikri</td>
-              <td><span class="badge-status badge-rh">RH</span></td>
-              <td>28/08/2026</td>
-              <td>120 Ko</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><i class="bi bi-file-earmark-image me-2" style="color:#0369a1"></i>IRM lombaire</td>
-              <td><span class="emp-avatar">MC</span> Mehdi Chraibi</td>
-              <td><span class="badge-status badge-gray">Imagerie</span></td>
-              <td>03/09/2026</td>
-              <td>2.1 Mo</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><i class="bi bi-file-earmark-text me-2" style="color:#dc2626"></i>Ordonnance — kiné respiratoire</td>
-              <td><span class="emp-avatar">IZ</span> Ilham Ziani</td>
-              <td><span class="badge-status badge-sms">Prescription</span></td>
-              <td>04/09/2026</td>
-              <td>195 Ko</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><i class="bi bi-file-earmark-person me-2" style="color:#7c3aed"></i>Contrat de travail — Salma Lahlou</td>
-              <td><span class="emp-avatar">SL</span> Salma Lahlou</td>
-              <td><span class="badge-status badge-rh">RH</span></td>
-              <td>15/06/2025</td>
-              <td>510 Ko</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><i class="bi bi-file-earmark-text me-2" style="color:#16a34a"></i>Bilan de suivi — mois d'août</td>
-              <td><span class="emp-avatar">NF</span> Nabil Fassi</td>
-              <td><span class="badge-status badge-ok">Bilan</span></td>
-              <td>01/09/2026</td>
-              <td>320 Ko</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><i class="bi bi-file-earmark-image me-2" style="color:#0369a1"></i>Radio épaule (G)</td>
-              <td><span class="emp-avatar">NF</span> Nabil Fassi</td>
-              <td><span class="badge-status badge-gray">Imagerie</span></td>
-              <td>03/09/2026</td>
-              <td>1.8 Mo</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><i class="bi bi-file-earmark-text me-2" style="color:#dc2626"></i>Certificat médical</td>
-              <td><span class="emp-avatar">FZ</span> Fatima Zahra</td>
-              <td><span class="badge-status badge-sms">Prescription</span></td>
-              <td>06/09/2026</td>
-              <td>150 Ko</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td><i class="bi bi-file-earmark-person me-2" style="color:#7c3aed"></i>Fiche de paie — août 2026</td>
-              <td><span class="emp-avatar">RB</span> Rachid Bensaid</td>
-              <td><span class="badge-status badge-rh">RH</span></td>
-              <td>01/09/2026</td>
-              <td>280 Ko</td>
-              <td>
-                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
-                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
-                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
-              </td>
-            </tr>
-          </tbody>
+          <tbody id="docsBody"></tbody>
         </table>
+        <div id="docsEmpty" class="text-center py-5" style="display:none">
+          <i class="bi bi-inbox" style="font-size:34px;color:#cbd5e1"></i>
+          <div class="mt-2 text-muted">Aucun document ne correspond aux filtres.</div>
+        </div>
       </div>
     </div>
 
@@ -334,6 +193,268 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
   </div>
 </div>
 
+<!-- ===== MODAL Créer / Modifier ===== -->
+<div class="modal fade" id="docModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="docModalTitle">Nouveau document</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="dId">
+        <div class="mb-3">
+          <label class="form-label">Nom du document</label>
+          <input id="dNom" type="text" class="form-control" placeholder="Ordonnance — rééducation genou">
+        </div>
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="form-label">Type</label>
+            <select id="dType" class="form-select">
+              <option>Prescription</option>
+              <option>Imagerie</option>
+              <option>Bilan</option>
+              <option>RH</option>
+              <option>Contrat</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Date</label>
+            <input id="dDate" type="text" class="form-control" placeholder="07/09/2026">
+          </div>
+        </div>
+        <div class="row g-3 mt-0">
+          <div class="col-6">
+            <label class="form-label">Rattacher à</label>
+            <select id="dOwnerType" class="form-select" onchange="fillDocOwners()">
+              <option value="patient">Patient</option>
+              <option value="employe">Employé</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Patient / Employé</label>
+            <select id="dOwner" class="form-select"></select>
+          </div>
+        </div>
+        <div class="mt-3">
+          <label class="form-label">Taille (Ko)</label>
+          <input id="dTaille" type="number" min="0" class="form-control" placeholder="245">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm" style="background:var(--accent);color:#fff" onclick="saveDoc()"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL Vue détaillée ===== -->
+<div class="modal fade" id="viewModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold" id="viewNom"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="inv-view-row"><span class="text-muted">Type</span><span id="viewType"></span></div>
+        <div class="inv-view-row"><span class="text-muted">Patient / Employé</span><span class="fw-semibold" id="viewOwner"></span></div>
+        <div class="inv-view-row"><span class="text-muted">Date</span><span class="fw-semibold" id="viewDate"></span></div>
+        <div class="inv-view-row"><span class="text-muted">Taille</span><span id="viewTaille"></span></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL Suppression ===== -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold" style="color:#dc2626"><i class="bi bi-trash me-1"></i>Supprimer le document</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Voulez-vous vraiment supprimer <b id="deleteNom"></b> ?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm btn-danger" onclick="confirmDelete()"><i class="bi bi-trash me-1"></i>Supprimer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+  <div id="ktoast" class="toast align-items-center" role="status">
+    <div class="d-flex">
+      <div class="toast-body" id="ktoastBody"></div>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/db.js"></script>
+<script src="js/ui.js"></script>
+<script>
+var editingId = null;
+
+function renderTable() {
+  var fType = document.getElementById('fType').value;
+  var d1 = document.getElementById('fDateDebut').value.trim();
+  var d2 = document.getElementById('fDateFin').value.trim();
+  var q = document.getElementById('fSearch').value.trim().toLowerCase();
+  var list = KinoeDB.documents().filter(function (d) {
+    if (fType && d.type !== fType) return false;
+    if (d1 && d.date < d1) return false;
+    if (d2 && d.date > d2) return false;
+    if (q && (d.nom + ' ' + d.ownerNom).toLowerCase().indexOf(q) === -1) return false;
+    return true;
+  });
+  var body = document.getElementById('docsBody');
+  var empty = document.getElementById('docsEmpty');
+  document.getElementById('docCount').textContent = list.length;
+  body.innerHTML = '';
+  empty.style.display = list.length ? 'none' : 'block';
+  list.forEach(function (d) {
+    var tr = document.createElement('tr');
+    var color = KinoeUI.docColor(d.type);
+    tr.innerHTML =
+      '<td><span class="doc-thumb me-2" style="background:' + color + '"><i class="bi ' + KinoeUI.docIcon(d.type) + '"></i></span>' + d.nom + '</td>' +
+      '<td><span class="emp-avatar">' + d.ownerInitiales + '</span>' + d.ownerNom + '</td>' +
+      '<td>' + KinoeUI.badgeDocType(d.type) + '</td>' +
+      '<td>' + d.date + '</td>' +
+      '<td class="text-muted">' + KinoeUI.fmtTaille(d.tailleKo) + '</td>' +
+      '<td style="white-space:nowrap">' +
+        '<button class="action-btn action-view" title="Voir" onclick="openView(\'' + d.id + '\')"><i class="bi bi-eye"></i></button>' +
+        '<button class="action-btn action-edit" title="Modifier" onclick="openEdit(\'' + d.id + '\')"><i class="bi bi-pencil-square"></i></button>' +
+        '<button class="action-btn action-del" title="Supprimer" onclick="openDelete(\'' + d.id + '\')"><i class="bi bi-trash3"></i></button>' +
+      '</td>';
+    body.appendChild(tr);
+  });
+}
+
+function fillTypeSelect() {
+  var seen = {};
+  var sel = document.getElementById('fType');
+  KinoeDB.documents().forEach(function (d) {
+    if (!seen[d.type]) { seen[d.type] = 1; var o = document.createElement('option'); o.value = d.type; o.textContent = d.type; sel.appendChild(o); }
+  });
+}
+
+function fillDocOwners() {
+  var type = document.getElementById('dOwnerType').value;
+  var sel = document.getElementById('dOwner');
+  var prev = sel.value;
+  sel.innerHTML = '';
+  var src = type === 'employe' ? KinoeDB.employes() : KinoeDB.patients();
+  var key = type === 'employe' ? 'id' : 'id';
+  src.forEach(function (o) {
+    var opt = document.createElement('option');
+    opt.value = o.id; opt.textContent = o.nom;
+    sel.appendChild(opt);
+  });
+  if (prev) sel.value = prev;
+}
+
+function openDocModal() {
+  editingId = null;
+  document.getElementById('docModalTitle').textContent = 'Nouveau document';
+  document.getElementById('dId').value = '';
+  document.getElementById('dNom').value = '';
+  document.getElementById('dType').value = 'Prescription';
+  document.getElementById('dDate').value = '07/09/2026';
+  document.getElementById('dOwnerType').value = 'patient';
+  fillDocOwners();
+  document.getElementById('dOwner').value = 'P001';
+  document.getElementById('dTaille').value = '';
+  KinoeUI.openModal('docModal');
+}
+
+function saveDoc() {
+  var nom = document.getElementById('dNom').value.trim();
+  var date = document.getElementById('dDate').value.trim();
+  if (!nom || !date) { KinoeUI.toast('Nom et date requis.'); return; }
+  var data = {
+    nom: nom, type: document.getElementById('dType').value, date: date,
+    ownerType: document.getElementById('dOwnerType').value,
+    ownerId: document.getElementById('dOwner').value,
+    tailleKo: document.getElementById('dTaille').value
+  };
+  if (editingId) {
+    KinoeDB.updateDocument(editingId, data);
+    KinoeUI.toast('Document modifié.');
+  } else {
+    var rec = KinoeDB.addDocument(data);
+    KinoeUI.toast('Document ' + rec.id + ' ajouté.');
+  }
+  KinoeUI.closeModal('docModal');
+  renderUI();
+}
+
+function openEdit(id) {
+  var d = KinoeDB.document(id);
+  if (!d) return;
+  editingId = id;
+  document.getElementById('docModalTitle').textContent = 'Modifier — ' + d.nom;
+  document.getElementById('dId').value = d.id;
+  document.getElementById('dNom').value = d.nom;
+  document.getElementById('dType').value = d.type;
+  document.getElementById('dDate').value = d.date;
+  document.getElementById('dOwnerType').value = d.ownerType;
+  fillDocOwners();
+  document.getElementById('dOwner').value = d.ownerId;
+  document.getElementById('dTaille').value = d.tailleKo;
+  KinoeUI.openModal('docModal');
+}
+
+function openView(id) {
+  var d = KinoeDB.document(id);
+  if (!d) return;
+  var color = KinoeUI.docColor(d.type);
+  document.getElementById('viewNom').innerHTML = '<span class="doc-thumb me-2" style="background:' + color + '"><i class="bi ' + KinoeUI.docIcon(d.type) + '"></i></span>' + d.nom;
+  document.getElementById('viewType').innerHTML = KinoeUI.badgeDocType(d.type);
+  document.getElementById('viewOwner').textContent = d.ownerNom;
+  document.getElementById('viewDate').textContent = d.date;
+  document.getElementById('viewTaille').textContent = KinoeUI.fmtTaille(d.tailleKo);
+  KinoeUI.openModal('viewModal');
+}
+
+function openDelete(id) {
+  var d = KinoeDB.document(id);
+  if (!d) return;
+  document.getElementById('deleteNom').textContent = d.nom;
+  document.getElementById('deleteModal').dataset.id = id;
+  KinoeUI.openModal('deleteModal');
+}
+
+function confirmDelete() {
+  var id = document.getElementById('deleteModal').dataset.id;
+  KinoeDB.deleteDocument(id);
+  KinoeUI.closeModal('deleteModal');
+  KinoeUI.toast('Document supprimé.');
+  renderUI();
+}
+
+function exportCSV() {
+  var rows = KinoeDB.documents().map(function (d) {
+    return [d.nom, d.ownerNom, d.type, d.date, d.tailleKo];
+  });
+  KinoeUI.csvExport('documents-kineogest.csv',
+    ['Document', 'Patient / Employé', 'Type', 'Date', 'Taille (Ko)'], rows);
+}
+
+function renderUI() {
+  renderTable();
+}
+fillTypeSelect();
+renderUI();
+</script>
 </body>
 </html>

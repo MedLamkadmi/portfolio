@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mohamed Lamkadmi — Portfolio</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>ML</text></svg>">
+</head>
+<body>
+
+<!-- ==================== SIDEBAR ==================== -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <h2>Mohamed Lamkadmi</h2>
+    <span>Developer &amp; Freelancer</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="#home" class="active"><span class="icon">🏠</span> Home</a>
+    <a href="#projects"><span class="icon">📂</span> Projects</a>
+    <a href="#about"><span class="icon">👤</span> About</a>
+    <a href="#contact"><span class="icon">✉️</span> Contact</a>
+  </nav>
+  <div class="sidebar-footer">© 2026 Mohamed Lamkadmi</div>
+</aside>
+
+<!-- ==================== MAIN ==================== -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <button class="hamburger" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+    <span class="topbar-title" id="page-title">Home</span>
+    <div class="topbar-right">
+      <input type="text" class="topbar-search" placeholder="Search projects…" readonly>
+    </div>
+  </header>
+
+  <!-- ==================== HOME ==================== -->
+  <section class="content" id="home">
+    <div class="section-header">
+      <h1>Welcome 👋</h1>
+      <p>Software developer and freelancer building management dashboards, web apps, and business tools.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card accent">
+        <div class="label">Projects Shipped</div>
+        <div class="value">1</div>
+      </div>
+      <div class="stat-card success">
+        <div class="label">Live Demos</div>
+        <div class="value">1</div>
+      </div>
+      <div class="stat-card warning">
+        <div class="label">Coming Soon</div>
+        <div class="value">3</div>
+      </div>
+    </div>
+
+    <!-- Projects preview -->
+    <div class="section-header" id="projects">
+      <h1>Projects</h1>
+      <p>Dashboard templates and management systems — click "View Demo" to interact.</p>
+    </div>
+
+    <div class="projects-grid">
+
+      <!-- CARD 1 — KinéoGest (LIVE) -->
+      <div class="project-card">
+        <div class="project-thumb">
+          <img src="assets/img/kineogest-thumb.png" alt="KinéoGest Dashboard"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+          <div class="placeholder-gradient" style="display:none;background:linear-gradient(135deg,#6c5ce7,#a29bfe);">📊</div>
+          <span class="badge badge-live">Live</span>
+        </div>
+        <div class="project-body">
+          <h3>KinéoGest</h3>
+          <p>Full management dashboard for a kinésithérapie clinic — appointments, patients, employees, documents, and invoicing. Built for a Moroccan client.</p>
+          <div class="tags">
+            <span class="tag">Dashboard</span>
+            <span class="tag green">French</span>
+            <span class="tag blue">Healthcare</span>
+          </div>
+        </div>
+        <div class="project-footer">
+          <span class="date">Sep 2026</span>
+          <a href="demos/kineogest/index.html" class="btn-demo">View Demo →</a>
+        </div>
+      </div>
+
+      <!-- CARD 2 — Coming Soon -->
+      <div class="project-card">
+        <div class="project-thumb">
+          <div class="placeholder-gradient" style="background:linear-gradient(135deg,#00b894,#55efc4);">📈</div>
+          <span class="badge badge-soon">Coming Soon</span>
+        </div>
+        <div class="project-body">
+          <h3>Analytics Dashboard</h3>
+          <p>Real-time analytics and reporting dashboard with interactive charts, KPI tracking, and exportable reports.</p>
+          <div class="tags">
+            <span class="tag">Charts</span>
+            <span class="tag orange">In Progress</span>
+          </div>
+        </div>
+        <div class="project-footer">
+          <span class="date">TBD</span>
+          <button class="btn-demo disabled">Coming Soon</button>
+        </div>
+      </div>
+
+      <!-- CARD 3 — Coming Soon -->
+      <div class="project-card">
+        <div class="project-thumb">
+          <div class="placeholder-gradient" style="background:linear-gradient(135deg,#e17055,#fab1a0);">🛒</div>
+          <span class="badge badge-soon">Coming Soon</span>
+        </div>
+        <div class="project-body">
+          <h3>E-Commerce Admin</h3>
+          <p>Inventory management, order tracking, and customer admin panel for small businesses.</p>
+          <div class="tags">
+            <span class="tag">Admin Panel</span>
+            <span class="tag orange">In Progress</span>
+          </div>
+        </div>
+        <div class="project-footer">
+          <span class="date">TBD</span>
+          <button class="btn-demo disabled">Coming Soon</button>
+        </div>
+      </div>
+
+      <!-- CARD 4 — Coming Soon -->
+      <div class="project-card">
+        <div class="project-thumb">
+          <div class="placeholder-gradient" style="background:linear-gradient(135deg,#0984e3,#74b9ff);">📋</div>
+          <span class="badge badge-soon">Coming Soon</span>
+        </div>
+        <div class="project-body">
+          <h3>Task Manager</h3>
+          <p>Team task and project management tool with drag-and-drop boards, deadlines, and notifications.</p>
+          <div class="tags">
+            <span class="tag">Productivity</span>
+            <span class="tag orange">In Progress</span>
+          </div>
+        </div>
+        <div class="project-footer">
+          <span class="date">TBD</span>
+          <button class="btn-demo disabled">Coming Soon</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==================== ABOUT ==================== -->
+  <section class="content" id="about" style="display:none;">
+    <div class="section-header">
+      <h1>About Me</h1>
+      <p>Developer, freelancer, and problem solver.</p>
+    </div>
+    <div class="about-grid">
+      <div class="about-card">
+        <h3>Who I Am</h3>
+        <p>I'm Mohamed Lamkadmi — a software developer focused on building practical, clean web applications and management tools. I work with clients to turn their business needs into functional, production-ready software.</p>
+      </div>
+      <div class="about-card">
+        <h3>Skills &amp; Tech</h3>
+        <ul>
+          <li><span class="dot"></span>JavaScript / TypeScript</li>
+          <li><span class="dot"></span>Python</li>
+          <li><span class="dot"></span>React / Vue / HTML+CSS</li>
+          <li><span class="dot"></span>Node.js / Express</li>
+          <li><span class="dot"></span>PostgreSQL / MongoDB</li>
+          <li><span class="dot"></span>Git / GitHub / CI/CD</li>
+          <li><span class="dot"></span>Dashboard &amp; UI Design</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== CONTACT ==================== -->
+  <section class="content" id="contact" style="display:none;">
+    <div class="section-header">
+      <h1>Contact</h1>
+      <p>Get in touch — let's build something together.</p>
+    </div>
+    <div class="contact-card">
+      <h3>Let's Talk</h3>
+      <p>Available for freelance projects, contract work, and collaborations.</p>
+      <div class="contact-links">
+        <a href="https://github.com/MedLamkadmi" target="_blank">
+          <span class="icon">🐙</span> github.com/MedLamkadmi
+        </a>
+        <a href="mailto:your-email@example.com">
+          <span class="icon">✉️</span> your-email@example.com
+        </a>
+        <a href="https://linkedin.com/in/your-profile" target="_blank">
+          <span class="icon">💼</span> LinkedIn
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">Built with care · Mohamed Lamkadmi © 2026</div>
+
+</div>
+
+<!-- ==================== NAV SWITCHER ==================== -->
+<script>
+const sections = document.querySelectorAll('.content');
+const navLinks = document.querySelectorAll('.sidebar-nav a');
+const pageTitle = document.getElementById('page-title');
+const titles = { home:'Home', projects:'Projects', about:'About', contact:'Contact' };
+
+function showSection(id) {
+  sections.forEach(s => s.style.display = 'none');
+  const target = document.getElementById(id);
+  if (target) target.style.display = 'block';
+  navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+  pageTitle.textContent = titles[id] || id;
+  document.getElementById('sidebar').classList.remove('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+navLinks.forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    showSection(link.getAttribute('href').slice(1));
+  });
+});
+
+// hash-based deep link
+if (window.location.hash) showSection(window.location.hash.slice(1));
+</script>
+
+</body>
+</html>

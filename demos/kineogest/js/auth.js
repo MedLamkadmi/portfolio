@@ -123,6 +123,7 @@
         'nouveau-patient.html': ['admin', 'secretaire', 'kine'],
         'rechercher.html': ['admin', 'secretaire', 'kine'],
         'documents.html': ['admin', 'secretaire'],
+        'stock.html': ['admin', 'secretaire'],
         'factures.html': ['admin', 'secretaire'],
         'paiements.html': ['admin', 'secretaire'],
         'rapports.html': ['admin', 'secretaire'],

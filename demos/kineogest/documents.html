@@ -62,6 +62,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
 .doc-thumb{width:38px;height:38px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:17px;color:#fff}
 .main-footer{padding:18px 24px;border-top:1px solid #e9ecef;font-size:12px;color:#636e72;text-align:center}
 @media(max-width:992px){#sidebar{transform:translateX(-100%)}#sidebar.show{transform:translateX(0)}#content{margin-left:0}.hamburger{display:block}}
+@media print{#sidebar,.topbar,.hamburger,.demo-notice,.main-footer,.page-header,.panel-head,.row.g-3.mb-3{display:none!important}#content{margin:0!important;padding:0!important}.card-panel{border:none;box-shadow:none}}
 </style>
 </head>
 <body>
@@ -93,6 +94,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
     </li>
     <li><a href="employes.html" class="menu-link"><i class="bi bi-person-gear"></i> Employés</a></li>
     <li><a href="documents.html" class="menu-link active"><i class="bi bi-folder2-open"></i> Documents</a></li>
+    <li><a href="stock.html" class="menu-link"><i class="bi bi-box-seam"></i> Stock</a></li>
     <li class="menu-label">Administration</li>
     <li>
       <button class="menu-link" data-bs-toggle="collapse" data-bs-target="#sub-facturation" aria-expanded="false"><i class="bi bi-cash-stack"></i> Facturation <i class="bi bi-chevron-right arrow"></i></button>
@@ -129,7 +131,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
         <small>Gestion de tous les documents du cabinet</small>
       </div>
       <div class="d-flex gap-2">
-        <a href="#" onclick="exportCSV();return false;" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download me-1"></i> Exporter</a>
+        <button class="btn btn-sm btn-outline-secondary" onclick="window.print()"><i class="bi bi-printer me-1"></i> Imprimer</button><a href="#" onclick="exportCSV();return false;" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download me-1"></i> Exporter</a>
         <button class="btn btn-sm" style="background:var(--accent);border-color:var(--accent);color:#fff" onclick="openDocModal()"><i class="bi bi-plus-lg me-1"></i> Nouveau document</button>
       </div>
     </div>

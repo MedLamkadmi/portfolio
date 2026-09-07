@@ -66,6 +66,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
 .inv-view-row:last-child{border-bottom:none}
 .stat-value-lg{font-size:20px;font-weight:700}
 @media(max-width:992px){#sidebar{transform:translateX(-100%)}#sidebar.show{transform:translateX(0)}#content{margin-left:0}.hamburger{display:block}}
+@media print{#sidebar,.topbar,.hamburger,.demo-notice,.main-footer,.page-header,.panel-head,.row.g-3.mb-3{display:none!important}#content{margin:0!important;padding:0!important}.card-panel{border:none;box-shadow:none}}
 </style>
 </head>
 <body>
@@ -96,6 +97,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
     </li>
     <li><a href="employes.html" class="menu-link"><i class="bi bi-person-gear"></i> Employés</a></li>
     <li><a href="documents.html" class="menu-link"><i class="bi bi-folder2-open"></i> Documents</a></li>
+    <li><a href="stock.html" class="menu-link"><i class="bi bi-box-seam"></i> Stock</a></li>
     <li class="menu-label">Administration</li>
     <li>
       <button class="menu-link" data-bs-toggle="collapse" data-bs-target="#sub-facturation" aria-expanded="true"><i class="bi bi-cash-stack"></i> Facturation <i class="bi bi-chevron-right arrow"></i></button>
@@ -132,6 +134,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
         <small>Gestion de la facturation du cabinet</small>
       </div>
       <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-outline-secondary" onclick="window.print()"><i class="bi bi-printer me-1"></i> Imprimer</button>
         <a href="#" onclick="exportCSV();return false;" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download me-1"></i> Exporter</a>
         <button class="btn btn-sm" style="background:var(--accent);border-color:var(--accent);color:#fff" data-bs-toggle="modal" data-bs-target="#factureModal" onclick="openFactureModal()"><i class="bi bi-plus-lg me-1"></i> Nouvelle facture</button>
       </div>
@@ -209,6 +212,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
               <th>N° Facture</th>
               <th>Patient</th>
               <th>Montant</th>
+              <th>Prise en charge</th>
               <th>Date</th>
               <th>Échéance</th>
               <th>Statut</th>
@@ -295,6 +299,9 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
         <div class="inv-view-row"><span class="text-muted">Échéance de paiement</span><span class="fw-semibold" id="viewEcheance"></span></div>
         <div class="inv-view-row"><span class="text-muted">Statut</span><span id="viewStatut"></span></div>
         <div class="inv-view-row"><span class="text-muted">Prestation</span><span class="fw-semibold">Séances de kinésithérapie</span></div>
+        <div class="inv-view-row"><span class="text-muted">Prise en charge</span><span class="fw-semibold" id="viewAssurance"></span></div>
+        <div class="inv-view-row"><span class="text-muted">Part assurance</span><span class="fw-semibold" id="viewPartAss"></span></div>
+        <div class="inv-view-row" style="background:#f8fafc;padding:12px 14px;border-radius:8px"><span class="text-muted">Net à charge du patient</span><span class="fw-bold" style="color:var(--accent)" id="viewNet"></span></div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
@@ -344,6 +351,19 @@ KinoeAuth.hook();
 <script>
 var editingNumero = null;
 
+function assuCell(patientId) {
+  var a = KinoeDB.assurance(patientId);
+  if (!a) return '<span class="text-muted" style="font-size:12px">Libre</span>';
+  return '<span class="badge" style="background:#eff6ff;color:#1d4ed8;font-size:11px">' + a.organisme + ' · ' + a.taux + '%</span>';
+}
+
+function netLine(patientId, montant) {
+  var a = KinoeDB.assurance(patientId);
+  if (!a) return '';
+  var net = montant - Math.round(montant * a.taux / 100);
+  return '<div class="text-muted" style="font-size:11px">Net ' + net + ' MAD</div>';
+}
+
 function badgeFor(statut) {
   if (statut === "Payée") return '<span class="badge-status badge-ok">Payée</span>';
   if (statut === "En attente") return '<span class="badge-status badge-warn">En attente</span>';
@@ -376,7 +396,8 @@ function renderTable() {
     tr.innerHTML =
       '<td><strong>' + f.numero + '</strong></td>' +
       '<td><span class="emp-avatar">' + initials + '</span>' + name + '</td>' +
-      '<td>' + f.montant + ' MAD</td>' +
+      '<td>' + f.montant + ' MAD' + netLine(f.patientId, f.montant) + '</td>' +
+      '<td>' + assuCell(f.patientId) + '</td>' +
       '<td>' + f.date + '</td>' +
       '<td>' + f.echeance + '</td>' +
       '<td>' + badgeFor(f.statut) + '</td>' +
@@ -456,6 +477,11 @@ function openView(numero) {
   document.getElementById('viewDate').textContent = f.date;
   document.getElementById('viewEcheance').textContent = f.echeance;
   document.getElementById('viewStatut').innerHTML = badgeFor(f.statut);
+  var a = KinoeDB.assurance(f.patientId);
+  var part = a ? Math.round(f.montant * a.taux / 100) : 0;
+  document.getElementById('viewAssurance').textContent = a ? (a.organisme + ' — ' + a.taux + '% — N° ' + a.numero) : 'Libre — sans prise en charge';
+  document.getElementById('viewPartAss').textContent = part ? part + ' MAD' : '—';
+  document.getElementById('viewNet').textContent = (f.montant - part) + ' MAD';
   new bootstrap.Modal(document.getElementById('viewModal')).show();
 }
 
@@ -477,9 +503,13 @@ function confirmDelete() {
 }
 
 function exportCSV() {
-  var rows = [['N° Facture', 'Patient', 'Montant (MAD)', 'Date', 'Échéance', 'Statut']];
+  var rows = [['N° Facture', 'Patient', 'Montant (MAD)', 'Prise en charge', 'Part assurance (MAD)', 'Net patient (MAD)', 'Date', 'Échéance', 'Statut']];
   KinoeDB.factures().forEach(function (f) {
-    rows.push([f.numero, f.patient ? f.patient.nom : '', String(f.montant), f.date, f.echeance, f.statut]);
+    var a = KinoeDB.assurance(f.patientId);
+    var part = a ? Math.round(f.montant * a.taux / 100) : 0;
+    rows.push([f.numero, f.patient ? f.patient.nom : '', String(f.montant),
+               a ? a.organisme + ' ' + a.taux + '%' : 'Libre', String(part), String(f.montant - part),
+               f.date, f.echeance, f.statut]);
   });
   var csv = rows.map(function (r) { return r.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(';'); }).join('\n');
   var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });

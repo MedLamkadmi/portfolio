@@ -62,6 +62,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
 .main-footer{padding:18px 24px;border-top:1px solid #e9ecef;font-size:12px;color:#636e72;text-align:center}
 .notes-cell{max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:992px){#sidebar{transform:translateX(-100%)}#sidebar.show{transform:translateX(0)}#content{margin-left:0}.hamburger{display:block}}
+@media print{#sidebar,.topbar,.hamburger,.demo-notice,.main-footer,.page-header,.panel-head,.row.g-3.mb-3{display:none!important}#content{margin:0!important;padding:0!important}.card-panel{border:none;box-shadow:none}}
 </style>
 </head>
 <body>
@@ -93,6 +94,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
     </li>
     <li><a href="employes.html" class="menu-link"><i class="bi bi-person-gear"></i> Employés</a></li>
     <li><a href="documents.html" class="menu-link"><i class="bi bi-folder2-open"></i> Documents</a></li>
+    <li><a href="stock.html" class="menu-link"><i class="bi bi-box-seam"></i> Stock</a></li>
     <li class="menu-label">Administration</li>
     <li>
       <button class="menu-link" data-bs-toggle="collapse" data-bs-target="#sub-facturation" aria-expanded="false"><i class="bi bi-cash-stack"></i> Facturation <i class="bi bi-chevron-right arrow"></i></button>
@@ -128,7 +130,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
         <h1>Dossiers médicaux</h1>
         <small>Dossiers de tous les patients enregistrés</small>
       </div>
-      <a href="#" onclick="exportCSV();return false;" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download me-1"></i> Exporter</a>
+      <button class="btn btn-sm btn-outline-secondary" onclick="window.print()"><i class="bi bi-printer me-1"></i> Imprimer</button><a href="#" onclick="exportCSV();return false;" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download me-1"></i> Exporter</a>
     </div>
 
     <div class="demo-notice mb-3">
@@ -260,6 +262,11 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
         <div class="inv-view-row"><span class="text-muted">Dernière visite</span><span class="fw-semibold" id="viewVisite"></span></div>
         <div class="inv-view-row"><span class="text-muted">Traitement</span><span id="viewTraitement"></span></div>
         <div class="inv-view-row"><span class="text-muted">Référent</span><span class="fw-semibold" id="viewTherapeute"></span></div>
+        <div class="inv-view-row"><span class="text-muted">Assurance</span><span class="fw-semibold" id="viewAssurance"></span></div>
+        <div class="mt-3">
+          <div class="text-muted" style="font-size:12px;font-weight:600">Prescription active — séances restantes</div>
+          <div id="viewPrescription" class="mt-1"></div>
+        </div>
         <div class="mt-3">
           <div class="text-muted" style="font-size:12px;font-weight:600">Équipe de suivi</div>
           <div id="viewTeam" class="mt-1 d-flex flex-wrap gap-2 align-items-center"></div>
@@ -466,6 +473,11 @@ function openView(patientId) {
   document.getElementById('viewTraitement').innerHTML = KinoeUI.badgeSpecialite(d.traitement);
   document.getElementById('viewTherapeute').textContent = d.therapeute ? d.therapeute.nom : '—';
   document.getElementById('viewNotes').textContent = d.notes || '—';
+  var a = KinoeDB.assurance(patientId);
+  document.getElementById('viewAssurance').innerHTML = a
+    ? a.organisme + ' <span class="badge" style="background:#eff6ff;color:#1d4ed8;font-size:10px">' + a.taux + '% prise en charge</span> <small class="text-muted">' + a.numero + '</small>'
+    : '<span class="text-muted" style="font-weight:400">Libre — sans prise en charge</span>';
+  document.getElementById('viewPrescription').innerHTML = prescBlock(KinoeDB.prescription(patientId));
   var team = document.getElementById('viewTeam');
   team.innerHTML = '';
   KinoeDB.equipe(patientId).forEach(function (m) { team.appendChild(teamChip(m)); });
@@ -485,6 +497,24 @@ function openView(patientId) {
   var btn = document.getElementById('intOpenBtn');
   btn.classList.toggle('d-none', !me || me.role === 'secretaire');
   KinoeUI.openModal('viewModal');
+}
+
+function prescBlock(p) {
+  if (!p) return '<div class="text-muted" style="font-size:13px">Aucune ordonnance active enregistrée pour ce suivi.</div>';
+  var pct = p.seancesTotal ? Math.round(p.seancesUtilisees * 100 / p.seancesTotal) : 0;
+  var over = p.epuisee;
+  var color = over ? '#dc2626' : p.seancesRestantes <= 3 ? '#d97706' : '#0f766e';
+  var badge = over
+    ? '<span class="badge" style="background:#fee2e2;color:#b91c1c;font-size:10px">Quota atteint — renouveler</span>'
+    : '<span class="badge" style="background:#ecfdf5;color:#047857;font-size:10px">En cours</span>';
+  return '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px">' +
+    '<div class="d-flex justify-content-between align-items-start">' +
+      '<div><div class="fw-semibold" style="font-size:13px">' + p.numero + ' — ' + p.medecin + '</div>' +
+      '<div class="text-muted" style="font-size:12px">Prescrite le ' + p.date + ' · Valide jusqu\'au ' + p.validite + '</div></div>' +
+      badge + '</div>' +
+    '<div class="progress mt-2" style="height:8px;background:#e2e8f0"><div class="progress-bar" style="width:' + Math.min(pct, 100) + '%;background:' + color + '"></div></div>' +
+    '<div class="mt-1" style="font-size:12px"><span class="fw-semibold">' + p.seancesUtilisees + '/' + p.seancesTotal + '</span> séances utilisées · <span class="fw-semibold">' + p.seancesRestantes + (p.seancesRestantes > 1 ? ' restantes' : ' restante') + '</span></div>' +
+  '</div>';
 }
 
 function teamChip(m) {

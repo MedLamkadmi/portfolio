@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portail patient — KinéoGest</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--accent:#0f766e;--accent-light:#ccfbf1}
+html,body{height:100%}
+body{font-family:'Inter',system-ui,sans-serif;background:#f0fdfa;margin:0;color:#0f172a}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .brand-icon{width:40px;height:40px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;color:#fff}
+.brand h5{margin:0;font-size:17px;font-weight:700}
+.brand small{font-size:11px;color:#64748b;font-weight:400}
+.wrap{max-width:900px;margin:0 auto;padding:28px 20px 60px}
+.card{border:none;border-radius:16px;box-shadow:0 6px 20px rgba(15,23,42,.08)}
+.card-head{background:#fff;border-bottom:1px solid #e9ecef;padding:16px 22px;border-radius:16px 16px 0 0;display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:700;font-size:15px;flex-wrap:wrap}
+.card-body{padding:22px}
+.badge-status{font-size:11px;font-weight:600;border-radius:20px;padding:4px 10px}
+.badge-ok{background:#dcfce7;color:#16a34a}
+.badge-warn{background:#fef3c7;color:#d97706}
+.badge-gray{background:#f1f5f9;color:#64748b}
+.badge-danger{background:#fee2e2;color:#dc2626}
+.stat-lg{font-size:24px;font-weight:800}
+.text-muted-s{color:#64748b}
+.assure-chip{background:#eff6ff;color:#1d4ed8}
+.nav-tabs .nav-link{color:#64748b;font-size:13.5px;font-weight:600}
+.nav-tabs .nav-link.active{color:var(--accent);font-weight:700}
+.progress{background:#e2e8f0}
+.foot{text-align:center;margin-top:26px;color:#64748b;font-size:12.5px}
+.foot a{color:var(--accent);text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div class="brand">
+      <div class="brand-icon">K</div>
+      <div><h5>KinéoGest</h5><small>Portail patient</small></div>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="rdv-en-ligne.html" class="btn btn-sm btn-outline-secondary"><i class="bi bi-calendar-plus me-1"></i> Prendre RDV</a>
+      <a href="login.html" class="btn btn-sm btn-outline-secondary"><i class="bi bi-shield-lock me-1"></i> Espace équipe</a>
+      <button class="btn btn-sm btn-outline-danger" id="btnLogout" style="display:none" onclick="logout()"><i class="bi bi-box-arrow-right me-1"></i> Déconnexion</button>
+    </div>
+  </div>
+
+  <!-- ===== CONNEXION PATIENT ===== -->
+  <div class="card mx-auto mt-4" id="loginPanel" style="max-width:460px">
+    <div class="card-head"><i class="bi bi-person-circle text-muted"></i> Accéder à votre espace</div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label class="form-label" style="font-size:13px;font-weight:600">Patient</label>
+        <select id="plPatient" class="form-select"></select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" style="font-size:13px;font-weight:600">Code d'accès</label>
+        <input id="plCode" type="password" class="form-control" placeholder="••••••••">
+      </div>
+      <button class="btn w-100" style="background:var(--accent);color:#fff;padding:10px" onclick="login()"><i class="bi bi-key me-1"></i> Me connecter</button>
+      <div class="form-text text-center mt-2">Démo : code <b>demo2026</b>. Vos rendez-vous, factures, prescriptions et suivis, en un seul endroit.</div>
+    </div>
+  </div>
+
+  <!-- ===== ESPACE PATIENT ===== -->
+  <div id="portalPanel" style="display:none">
+    <div class="card mb-3">
+      <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div class="d-flex align-items-center gap-3">
+          <div class="emp-avatar d-inline-flex align-items-center justify-content-center" style="width:44px;height:44px;border-radius:50%;background:var(--accent-light);color:var(--accent);font-weight:700;font-size:15px" id="ptInitiales">--</div>
+          <div>
+            <div class="fw-bold" style="font-size:16px" id="ptNom">—</div>
+            <div class="text-muted-s" style="font-size:12.5px" id="ptAssurance">—</div>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-outline-secondary" onclick="window.print()"><i class="bi bi-printer me-1"></i> Imprimer mon dossier</button>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-md-3"><div class="card"><div class="card-body p-3">
+        <div class="text-muted-s" style="font-size:12px">Prochains RDV</div><div class="stat-lg" id="ptStatRdv">0</div>
+      </div></div></div>
+      <div class="col-6 col-md-3"><div class="card"><div class="card-body p-3">
+        <div class="text-muted-s" style="font-size:12px">Séances restantes</div><div class="stat-lg" style="color:var(--accent)" id="ptStatRest">0</div>
+      </div></div></div>
+      <div class="col-6 col-md-3"><div class="card"><div class="card-body p-3">
+        <div class="text-muted-s" style="font-size:12px">Factures à régler</div><div class="stat-lg" style="color:#d97706" id="ptStatRet">0</div>
+      </div></div></div>
+      <div class="col-6 col-md-3"><div class="card"><div class="card-body p-3">
+        <div class="text-muted-s" style="font-size:12px">Interventions enregistrées</div><div class="stat-lg" id="ptStatInt">0</div>
+      </div></div></div>
+    </div>
+
+    <ul class="nav nav-tabs mb-3">
+      <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab-rdv"><i class="bi bi-calendar-check me-1"></i>Mes rendez-vous</a></li>
+      <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-fac"><i class="bi bi-receipt me-1"></i>Factures & règlements</a></li>
+      <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-presc"><i class="bi bi-clipboard2-pulse me-1"></i>Ma prescription</a></li>
+      <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-historique"><i class="bi bi-journal-text me-1"></i>Historique & intervention</a></li>
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane fade show active py-2" id="tab-rdv">
+        <div class="card"><div class="table-responsive">
+          <table class="table mb-0" style="font-size:13px">
+            <thead><tr style="font-size:11px;text-transform:uppercase;color:#64748b"><th>Date</th><th>Heure</th><th>Motif</th><th>Kinésithérapeute</th><th>Statut</th></tr></thead>
+            <tbody id="ptRdvBody"></tbody>
+          </table>
+        </div></div>
+      </div>
+
+      <div class="tab-pane fade py-2" id="tab-fac">
+        <div class="card"><div class="table-responsive">
+          <table class="table mb-0" style="font-size:13px">
+            <thead><tr style="font-size:11px;text-transform:uppercase;color:#64748b"><th>N°</th><th>Date</th><th>Total</th><th>Part assurance</th><th>Net à payer</th><th>Statut</th></tr></thead>
+            <tbody id="ptFacBody"></tbody>
+          </table>
+        </div></div>
+      </div>
+
+      <div class="tab-pane fade py-2" id="tab-presc">
+        <div class="card"><div class="card-body" id="ptPresc"></div></div>
+      </div>
+
+      <div class="tab-pane fade py-2" id="tab-historique">
+        <div class="card"><div class="card-body" id="ptHist"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    © 2026 KinéoGest — maquette de démonstration · Données fictives ·
+    <a href="rdv-en-ligne.html">Prendre rendez-vous</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/db.js"></script>
+<script src="js/ui.js"></script>
+<script>
+var _pid = null;
+var PORTAL_PWD = 'demo2026';
+
+function sessLoad() { try { return localStorage.getItem('kineogest_patient_session'); } catch (e) { return null; } }
+function sessSet(v) { try { localStorage.setItem('kineogest_patient_session', v); } catch (e) {} }
+function sessClear() { try { localStorage.removeItem('kineogest_patient_session'); } catch (e) {} }
+
+function withPatient(id) { return id && KinoeDB.patient(id); }
+
+function fillPatients() {
+  var sel = document.getElementById('plPatient');
+  sel.innerHTML = '';
+  KinoeDB.patients().forEach(function (p) {
+    var o = document.createElement('option'); o.value = p.id; o.textContent = p.nom;
+    sel.appendChild(o);
+  });
+  var saved = sessLoad();
+  if (saved && KinoeDB.patient(saved)) sel.value = saved;
+}
+
+function login() {
+  var id = document.getElementById('plPatient').value;
+  var code = document.getElementById('plCode').value;
+  if (!id || code !== PORTAL_PWD) { document.getElementById('plCode').classList.add('is-invalid'); return; }
+  document.getElementById('plCode').classList.remove('is-invalid');
+  sessSet(id);
+  _pid = id;
+  renderPortal();
+}
+
+function logout() {
+  sessClear();
+  _pid = null;
+  document.getElementById('loginPanel').style.display = 'block';
+  document.getElementById('portalPanel').style.display = 'none';
+  document.getElementById('btnLogout').style.display = 'none';
+}
+
+function badgeFor(statut) {
+  if (statut === 'Payée') return '<span class="badge-status badge-ok">Payée</span>';
+  if (statut === 'En attente') return '<span class="badge-status badge-warn">En attente</span>';
+  if (statut === 'En retard') return '<span class="badge-status badge-danger">En retard</span>';
+  if (statut === 'Remboursé') return '<span class="badge-status badge-gray">Remboursé</span>';
+  if (statut === 'Annulé') return '<span class="badge-status badge-gray">Annulé</span>';
+  return '<span class="badge-status badge-ok">' + statut + '</span>';
+}
+
+function renderPortal() {
+  if (!withPatient(_pid)) return;
+  var pat = KinoeDB.patient(_pid);
+  document.getElementById('ptInitiales').textContent = pat.initiales;
+  document.getElementById('ptNom').textContent = pat.nom;
+  var a = KinoeDB.assurance(_pid);
+  document.getElementById('ptAssurance').innerHTML = a
+    ? 'Prise en charge : <b>' + a.organisme + '</b> · ' + a.taux + '% — N° ' + a.numero
+    : 'Libre — sans prise en charge';
+
+  /* RDV */
+  var rdvs = KinoeDB.rendezvous().filter(function (r) { return r.patientId === _pid; });
+  var future = rdvs.filter(function (r) { return r.statut !== 'Annulé'; });
+  document.getElementById('ptStatRdv').textContent = future.length;
+  var rdvBody = document.getElementById('ptRdvBody');
+  rdvBody.innerHTML = '';
+  if (!future.length) rdvBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Aucun rendez-vous à venir.</td></tr>';
+  future.forEach(function (r) {
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + r.date + '</td><td>' + r.heure + '</td><td>' + r.traitement + '</td>' +
+      '<td>' + (r.therapeute ? r.therapeute.nom : '—') + '</td><td>' + badgeFor(r.statut) + '</td>';
+    rdvBody.appendChild(tr);
+  });
+
+  /* Factures */
+  var facs = KinoeDB.factures().filter(function (f) { return f.patientId === _pid; });
+  var aRemb = 0;
+  facs.forEach(function (f) { if (f.statut !== 'Payée' && f.statut !== 'Remboursé') aRemb += f.montant; });
+  document.getElementById('ptStatRet').textContent = aRemb ? aRemb + ' MAD' : '0';
+  var facBody = document.getElementById('ptFacBody');
+  facBody.innerHTML = '';
+  if (!facs.length) facBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Aucune facture.</td></tr>';
+  facs.forEach(function (f) {
+    var part = a ? Math.round(f.montant * a.taux / 100) : 0;
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td><b>' + f.numero + '</b></td><td>' + f.date + '</td><td>' + f.montant + ' MAD</td>' +
+      '<td>' + (part ? part + ' MAD' : '—') + '</td><td><b>' + (f.montant - part) + ' MAD</b></td><td>' + badgeFor(f.statut) + '</td>';
+    facBody.appendChild(tr);
+  });
+
+  /* Prescription */
+  var p = KinoeDB.prescription(_pid);
+  var presc = document.getElementById('ptPresc');
+  if (!p) {
+    presc.innerHTML = '<div class="text-muted">Aucune prescription active enregistrée. Renseignez l’ordonnance auprès du secrétariat.</div>';
+    document.getElementById('ptStatRest').textContent = '0';
+  } else {
+    var pct = p.seancesTotal ? Math.round(p.seancesUtilisees * 100 / p.seancesTotal) : 0;
+    var color = p.epuisee ? '#dc2626' : p.seancesRestantes <= 3 ? '#d97706' : '#0f766e';
+    presc.innerHTML =
+      '<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">' +
+        '<div><b style="font-size:15px">' + p.numero + '</b> — ' + p.medecin + '</div>' +
+        (p.epuisee ? '<span class="badge-status badge-danger">Quota atteint — renouveler</span>'
+                   : '<span class="badge-status badge-ok">En cours</span>') +
+      '</div>' +
+      '<div class="text-muted" style="font-size:12.5px;margin-bottom:8px">Prescrite le ' + p.date + ' · Valide jusqu’au ' + p.validite + '</div>' +
+      '<div class="progress" style="height:10px"><div class="progress-bar" style="width:' + Math.min(pct, 100) + '%;background:' + color + '"></div></div>' +
+      '<div class="mt-2" style="font-size:13px"><b>' + p.seancesUtilisees + '/' + p.seancesTotal + '</b> séances utilisées · <b>' + p.seancesRestantes + '</b> séances restantes</div>';
+    document.getElementById('ptStatRest').textContent = p.seancesRestantes;
+  }
+
+  /* Historique interventions */
+  var ints = KinoeDB.interventionsFor(_pid).slice();
+  ints.sort(function (a, b) {
+    function n(s) { var x = String(s).split('/'); return (+x[2]) * 10000 + (+x[1]) * 100 + (+x[0]); }
+    return n(b.date) - n(a.date);
+  });
+  document.getElementById('ptStatInt').textContent = ints.length;
+  var hist = document.getElementById('ptHist');
+  hist.innerHTML = '';
+  if (!ints.length) hist.innerHTML = '<div class="text-muted">Aucune intervention enregistrée.</div>';
+  ints.forEach(function (i) {
+    var d = document.createElement('div');
+    d.className = 'd-flex align-items-start gap-2 py-2';
+    d.style.cssText = 'border-bottom:1px solid #f1f5f9';
+    d.innerHTML =
+      '<span class="emp-avatar d-inline-flex align-items-center justify-content-center" style="width:28px;height:28px;border-radius:50%;background:var(--accent-light);color:var(--accent);font-weight:700;font-size:10px;flex-shrink:0">' + ((i.therapeute || {}).initiales || '—') + '</span>' +
+      '<div style="font-size:13px"><div class="fw-semibold">' + (i.therapeute ? i.therapeute.nom : '—') +
+        ' <small class="text-muted float-end">' + i.date + ' · ' + i.duree + ' min</small></div>' +
+        '<div class="text-muted" style="font-size:11.5px">' + i.type + '</div><div class="mt-1">' + i.note + '</div></div>';
+    hist.appendChild(d);
+  });
+
+  document.getElementById('loginPanel').style.display = 'none';
+  document.getElementById('portalPanel').style.display = 'block';
+  document.getElementById('btnLogout').style.display = 'inline-block';
+}
+
+function init() {
+  fillPatients();
+  var saved = sessLoad();
+  if (saved && withPatient(saved)) { _pid = saved; renderPortal(); }
+}
+init();
+</script>
+</body>
+</html>

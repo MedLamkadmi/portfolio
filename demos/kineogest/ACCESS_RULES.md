@@ -1,6 +1,6 @@
 # Règles d'accès et de fonctionnement — KinéoGest
 
-Version v2 · 07/09/2026 · Document de référence (démo et production)
+Version v3 · 07/09/2026 · Document de référence (démo et production)
 
 ## 1. Rôles
 
@@ -38,11 +38,14 @@ Version v2 · 07/09/2026 · Document de référence (démo et production)
 | `rechercher.html` | ✓ | ✓ | ✓ | Recherche globale sur tous les patients (partagé) | ouvrir dossier, créer RDV (kiné : soi), facturer (admin/sec) |
 | `rappels-sms.html` | ✓ | ✓ | ✓ (lecture) | Rappels de tous les patients | admin/sec : planifier + envoyer ; kiné : consultation |
 | `documents.html` | ✓ | ✓ | ✗ | Classeur administratif global | les documents médicaux du patient vivent dans son dossier (kiné/admin/sec) |
-| `factures.html` | ✓ | ✓ | ✗ | Liste des factures clients | création / statut / encaissement (sec), règles (admin) |
+| `stock.html` | ✓ | ✓ | ✗ | Inventaire du cabinet (équipement + consommables), seuils d'alerte | entrées / sorties / inventaire ; PDF + CSV (admin) |
+| `factures.html` | ✓ | ✓ | ✗ | Liste des factures clients + prise en charge assurance | création / statut / encaissement (sec), règles (admin) |
 | `paiements.html` | ✓ | ✓ | ✗ | Journal des paiements | saisie encaissement (sec), validation (admin) |
 | `rapports.html` | ✓ | ✓ | ✗ | Indicateurs financiers + activité | export (admin) |
 | `employes.html` | ✓ | ✗ | ✗ | Équipe, rôles, salaires, statuts | recrutement, salaires, accès |
 | `parametres.html` | ✓ | ✗ | ✗ | Configuration du cabinet | profil, paramètres |
+| `rdv-en-ligne.html` | — | — | — | **Public** (sans connexion) : prise de RDV par le patient | crée le patient et un RDV « En attente » ; kiné auto-affecté selon la disponibilité |
+| `portail.html` | — | — | — | **Public** : connexion patient (code `demo2026`) | RDV, factures + assurance, prescription, historique des interventions |
 
 ## 4. Mon espace — contenu par rôle
 
@@ -64,3 +67,12 @@ Version v2 · 07/09/2026 · Document de référence (démo et production)
 4. Cacher la carte « Encaissements du mois » pour les kinés sur `index.html`.
 5. `rappels-sms.html` : kiné en lecture seule.
 6. `emploi-du-temps.html` : grille complète pour tous les rôles.
+
+## 7. Ajouts du parcours client (v3)
+
+1. **Prescriptions / ordonnances** (`prescriptions`) : médecin prescripteur, date, validité, **quota de séances**. Les séances utilisées sont comptées sur les interventions de type « Séance » (comptage automatique, partagé entre kinés) ; la fiche patient affiche la progression et alerte « Quota atteint — renouveler » (ex. P007).
+2. **Assurances / tier payant** (`assurance(patientId)`) : organisme (AMO — CNSS, CNOPS, mutuelles…), n° d'assuré, taux de prise en charge. Affichée sur le dossier, sur chaque facture (part assurance / net à charge) et sur le portail patient.
+3. **Stock & consommables** (`stock.html`, collection `stock`) : inventaire équipement + consommables, seuils minimum (statuts « Rupture » / « Bas » / « OK »), mouvements (entrée / sortie / inventaire). Pages interdites aux kinés.
+4. **Prise de RDV en ligne** (`rdv-en-ligne.html`) : page publique, sans connexion. Crée un patient et un RDV « En attente » ; le kiné est auto-affecté sur la disponibilité réelle du créneau. Les rappels SMS existants couvrent la confirmation.
+5. **Portail patient** (`portail.html`) : accès public avec session patient (`kineogest_patient_session`, code `demo2026`). Le patient consulte ses RDV, factures + prise en charge, sa prescription et l'historique de ses interventions ; impression de son dossier.
+6. **Impression / PDF** : boutons « Imprimer » (factures, paiements, dossiers, stock, rapports, documents) avec styles d'impression dédiés ; exports CSV enrichis (factures avec volet assurance).

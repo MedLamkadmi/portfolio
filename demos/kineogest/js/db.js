@@ -5,7 +5,7 @@
    locale, données fictives. Prêt à être remplacé par une vraie
    base (Supabase / API) sans toucher aux pages.
    Collections : patients, employes, factures, rendezvous,
-   dossiers, documents, paiements.
+   dossiers, documents, paiements, interventions, prescriptions, stock.
    ============================================================ */
 (function () {
   var KEY = "kineogest_db_v5";
@@ -153,6 +153,52 @@
     ["INT-020", "P010", "E005", "18/08/2026", "Bilan", 35, "Bilan en relais — mobilité, verticalisation, Pilates."]
   ];
 
+  /* Prescriptions / ordonnances : [numero, patientId, médecin, date, séances totales, validité] */
+  var PRESCRIPTIONS = [
+    ["PR-2026-0101", "P001", "Dr. Benkirane — Orthopédie", "10/08/2026", 20, "09/10/2026"],
+    ["PR-2026-0102", "P002", "Dr. Chraibi — Rhumatologie", "25/07/2026", 12, "23/09/2026"],
+    ["PR-2026-0103", "P003", "Dr. El Amrani — Médecine du sport", "01/08/2026", 15, "30/09/2026"],
+    ["PR-2026-0104", "P004", "Dr. Benkirane — Orthopédie", "28/07/2026", 10, "26/09/2026"],
+    ["PR-2026-0105", "P005", "Dr. Tazi — Pneumologie", "05/08/2026", 30, "04/10/2026"],
+    ["PR-2026-0106", "P006", "Dr. Chraibi — Rhumatologie", "12/07/2026", 15, "10/09/2026"],
+    ["PR-2026-0107", "P007", "Dr. El Amrani — Médecine du sport", "28/07/2026", 2, "26/09/2026"],
+    ["PR-2026-0108", "P008", "Dr. Chraibi — Rhumatologie", "20/07/2026", 15, "18/09/2026"],
+    ["PR-2026-0109", "P009", "Pr. Lahlou — Pédiatrie", "06/08/2026", 10, "05/10/2026"],
+    ["PR-2026-0110", "P010", "Dr. El Amrani — Médecine du sport", "08/08/2026", 15, "07/10/2026"]
+  ];
+
+  /* Prise en charge assurance : patientId → { organisme, n° d'assuré, taux de couverture % } */
+  var ASSURANCES = {
+    "P001": { organisme: "AMO — CNSS", numero: "AM-2024-0031452", taux: 70 },
+    "P002": { organisme: "CNOPS", numero: "CN-88721-L", taux: 80 },
+    "P003": { organisme: "Mutuelle Coprel", numero: "CP-559102", taux: 90 },
+    "P004": { organisme: "AMO — CNSS", numero: "AM-2024-0047811", taux: 70 },
+    "P005": { organisme: "CNOPS", numero: "CN-90125-K", taux: 80 },
+    "P006": { organisme: "Mutuelle Wafa Assurances", numero: "WA-2214573", taux: 100 },
+    "P007": { organisme: "AMO — CNSS", numero: "AM-2024-0081123", taux: 70 },
+    "P008": { organisme: "CNOPS", numero: "CN-77520-J", taux: 80 },
+    "P009": { organisme: "Mutuelle AXA", numero: "AX-334908", taux: 85 }
+  };
+
+  /* Stock / consommables : [id, nom, catégorie, quantité, seuil min, unité, prix unitaire (MAD), dernière MAJ] */
+  var STOCK_SEED = [
+    ["STK-001", "Table de massage fixe", "Équipement", 4, 2, "unité", 5500, "01/09/2026"],
+    ["STK-002", "Table de massage pliante", "Équipement", 2, 1, "unité", 3800, "01/09/2026"],
+    ["STK-003", "Huile de massage", "Consommable", 9, 5, "litre", 120, "02/09/2026"],
+    ["STK-004", "Gel d'échographie", "Consommable", 3, 5, "litre", 90, "02/09/2026"],
+    ["STK-005", "Bandage cohésif", "Consommable", 40, 30, "rouleau", 25, "01/09/2026"],
+    ["STK-006", "Compresses non tissées", "Consommable", 12, 15, "paquet", 18, "03/09/2026"],
+    ["STK-007", "Bandes élastiques (téras)", "Rééducation", 20, 15, "unité", 45, "01/09/2026"],
+    ["STK-008", "Cryo-packs (gel froid)", "Rééducation", 6, 4, "unité", 60, "01/09/2026"],
+    ["STK-009", "Électrodes de stimulation", "Rééducation", 15, 10, "paire", 15, "02/09/2026"],
+    ["STK-010", "Balles de proprioception", "Rééducation", 8, 5, "unité", 40, "01/09/2026"],
+    ["STK-011", "Tête ondes de choc", "Équipement", 2, 1, "unité", 900, "01/09/2026"],
+    ["STK-012", "Désinfectant surfaces", "Hygiène", 2, 3, "litre", 60, "03/09/2026"],
+    ["STK-013", "Gants nitrile (boîte 100)", "Hygiène", 5, 6, "boîte", 35, "03/09/2026"],
+    ["STK-014", "Tapis de sol (grand)", "Équipement", 0, 2, "unité", 250, "28/08/2026"],
+    ["STK-015", "Spray de froid", "Consommable", 4, 3, "unité", 55, "02/09/2026"]
+  ];
+
   /* Documents : [id, nom, type, ownerType ("patient"/"employe"), ownerId, date, taille (Ko)] */
   var DOCUMENTS = [
     ["DOC-001", "Ordonnance — rééducation genou", "Prescription", "patient", "P001", "05/09/2026", 245],
@@ -295,6 +341,24 @@
     }).sort(function (a, b) { return b.date.localeCompare(a.date); });
   }
 
+  function prescriptions() {
+    return PRESCRIPTIONS.map(function (p) {
+      return {
+        numero: p[0], patientId: p[1], medecin: p[2],
+        date: p[3], seancesTotal: p[4], validite: p[5]
+      };
+    });
+  }
+
+  function stock() {
+    return STOCK_SEED.map(function (s) {
+      return {
+        id: s[0], nom: s[1], categorie: s[2], quantite: s[3],
+        seuilMin: s[4], unite: s[5], prixUnitaire: s[6], dateMaj: s[7]
+      };
+    });
+  }
+
   function documents() {
     return DOCUMENTS.map(function (d) {
       var owner = d[3] === "employe" ? employeById(d[4]) : patientById(d[4]);
@@ -390,7 +454,8 @@
     return {
       patients: patients(), employes: employes(), factures: factures(),
       rendezvous: rendezvous(), dossiers: dossiers(), documents: documents(),
-      paiements: paiements(), interventions: interventions()
+      paiements: paiements(), interventions: interventions(),
+      prescriptions: prescriptions(), stock: stock()
     };
   }
 
@@ -399,10 +464,24 @@
     if (!d) {
       d = seed();
       save(d);
-    } else if (!d.interventions) {
-      /* Migration : base existante sans historique d'interventions. */
-      d.interventions = interventions();
-      save(d);
+    } else {
+      var changed = false;
+      if (!d.interventions) {
+        /* Migration : base existante sans historique d'interventions. */
+        d.interventions = interventions();
+        changed = true;
+      }
+      if (!d.prescriptions) {
+        /* Migration : base existante sans ordonnances / quotas. */
+        d.prescriptions = prescriptions();
+        changed = true;
+      }
+      if (!d.stock) {
+        /* Migration : base existante sans module stock. */
+        d.stock = stock();
+        changed = true;
+      }
+      if (changed) save(d);
     }
     return d;
   }
@@ -677,6 +756,38 @@
       return out;
     },
 
+    /* --- Prescriptions / ordonnances & quotas --- */
+    prescriptions: function () {
+      return db().prescriptions.slice();
+    },
+    /* Séances consommées : comptées sur les interventions de type « Séance » (partagées inter-kinés). */
+    seancesUtilisees: function (patientId) {
+      var n = 0;
+      db().interventions.forEach(function (i) { if (i.patientId === patientId && i.type === "Séance") n++; });
+      return n;
+    },
+    /* Dernière ordonnance du patient avec quota calculé (copie, sans mutation du stockage). */
+    prescription: function (patientId) {
+      var best = null;
+      db().prescriptions.forEach(function (p) {
+        if (p.patientId !== patientId) return;
+        if (!best || p.date.localeCompare(best.date) >= 0) best = p;
+      });
+      if (!best) return null;
+      var used = 0;
+      db().interventions.forEach(function (i) { if (i.patientId === patientId && i.type === "Séance") used++; });
+      var total = best.seancesTotal || 0;
+      return {
+        numero: best.numero, patientId: best.patientId, medecin: best.medecin,
+        date: best.date, seancesTotal: total, validite: best.validite,
+        seancesUtilisees: used, seancesRestantes: Math.max(total - used, 0),
+        epuisee: total > 0 && used >= total
+      };
+    },
+    /* --- Prise en charge assurance --- */
+    assurances: function () { return ASSURANCES; },
+    assurance: function (patientId) { return ASSURANCES[patientId] || null; },
+
     /* --- Documents --- */
     documents: function () {
       return db().documents.slice().sort(function (a, b) { return b.date.localeCompare(a.date); });
@@ -720,6 +831,41 @@
       var d = db();
       d.documents = d.documents.filter(function (dd) { return dd.id !== id; });
       save(d);
+    },
+
+    /* --- Stock / consommables --- */
+    stock: function () { return db().stock.slice(); },
+    stockItem: function (id) {
+      var found = null;
+      db().stock.forEach(function (s) { if (s.id === id) found = s; });
+      return found;
+    },
+    adjustStock: function (id, delta) {
+      var d = db();
+      d.stock.forEach(function (s) {
+        if (s.id === id) s.quantite = Math.max(0, (s.quantite || 0) + (Number(delta) || 0));
+      });
+      save(d);
+    },
+    setStock: function (id, quantite) {
+      var d = db();
+      d.stock.forEach(function (s) { if (s.id === id) s.quantite = Math.max(0, Number(quantite) || 0); });
+      save(d);
+    },
+    statutStock: function (x) {
+      if (x.quantite <= 0) return "Rupture";
+      if (x.quantite < x.seuilMin) return "Bas";
+      return "OK";
+    },
+    statsStock: function () {
+      var s = { articles: 0, valeur: 0, bas: 0, rupture: 0 };
+      db().stock.forEach(function (x) {
+        s.articles++;
+        s.valeur += x.quantite * x.prixUnitaire;
+        if (x.quantite <= 0) s.rupture++;
+        else if (x.quantite < x.seuilMin) s.bas++;
+      });
+      return s;
     },
 
     /* --- Paiements --- */

@@ -113,6 +113,29 @@
     hook: function () {
       var c = this.current();
       if (!c) return;
+      var ROUTES = {
+        'index.html': ['admin', 'secretaire', 'kine'],
+        'mon-espace.html': ['admin', 'secretaire', 'kine'],
+        'dossiers-medicaux.html': ['admin', 'secretaire', 'kine'],
+        'rendez-vous.html': ['admin', 'secretaire', 'kine'],
+        'emploi-du-temps.html': ['admin', 'secretaire', 'kine'],
+        'rappels-sms.html': ['admin', 'secretaire', 'kine'],
+        'nouveau-patient.html': ['admin', 'secretaire', 'kine'],
+        'rechercher.html': ['admin', 'secretaire', 'kine'],
+        'documents.html': ['admin', 'secretaire'],
+        'factures.html': ['admin', 'secretaire'],
+        'paiements.html': ['admin', 'secretaire'],
+        'rapports.html': ['admin', 'secretaire'],
+        'employes.html': ['admin'],
+        'parametres.html': ['admin']
+      };
+      Object.keys(ROUTES).forEach(function (page) {
+        if (ROUTES[page].indexOf(c.role) !== -1) return;
+        document.querySelectorAll('.sidebar-menu a[href$="' + page + '"]').forEach(function (a) {
+          var li = a.closest('li');
+          if (li) li.style.display = 'none';
+        });
+      });
       var avatar = document.querySelector(".topbar .avatar");
       if (avatar) {
         avatar.textContent = c.initiales;

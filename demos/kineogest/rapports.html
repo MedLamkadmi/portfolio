@@ -160,28 +160,28 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
       <div class="card-body">
         <div class="list-group list-group-flush">
           <div class="list-group-item d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-cash-stack me-2" style="color:var(--accent)"></i> Revenu total (2026)</span>
-            <strong>588 500 MAD</strong>
+            <span><i class="bi bi-cash-stack me-2" style="color:var(--accent)"></i> Encaissements (2026)</span>
+            <strong id="kpRevTotal">—</strong>
           </div>
           <div class="list-group-item d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-people me-2" style="color:var(--accent)"></i> Patients actifs</span>
-            <strong>183</strong>
+            <span><i class="bi bi-people me-2" style="color:var(--accent)"></i> Patients enregistrés</span>
+            <strong id="kpPat">—</strong>
           </div>
           <div class="list-group-item d-flex justify-content-between align-items-center">
             <span><i class="bi bi-calendar-check me-2" style="color:var(--accent)"></i> Rendez-vous ce mois</span>
-            <strong>312</strong>
+            <strong id="kpRdv">—</strong>
           </div>
           <div class="list-group-item d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-percent me-2" style="color:var(--accent)"></i> Taux d'occupation moyen</span>
-            <strong>73%</strong>
+            <span><i class="bi bi-percent me-2" style="color:var(--accent)"></i> Taux d'occupation (semaine)</span>
+            <strong id="kpOcc">—</strong>
           </div>
           <div class="list-group-item d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-graph-up-arrow me-2" style="color:var(--accent)"></i> Croissance mensuelle</span>
-            <strong class="text-success">+4.2%</strong>
+            <span><i class="bi bi-graph-up-arrow me-2" style="color:var(--accent)"></i> Évolution encaissements du mois</span>
+            <strong class="text-success" id="kpCroiss">—</strong>
           </div>
           <div class="list-group-item d-flex justify-content-between align-items-center">
             <span><i class="bi bi-exclamation-triangle me-2" style="color:#d97706"></i> Factures en retard</span>
-            <strong class="text-danger">4</strong>
+            <strong class="text-danger" id="kpRetard">—</strong>
           </div>
         </div>
       </div>
@@ -193,11 +193,91 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="js/db.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/auth.js"></script>
 <script>
-new Chart(document.getElementById('chartRevenus'),{type:'line',data:{labels:['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Août'],datasets:[{label:'Revenus (MAD)',data:[62000,58000,71000,68000,75000,82000,88000,84500],borderColor:'#0f766e',backgroundColor:'rgba(15,118,110,.1)',fill:true,tension:.4,pointRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false,ticks:{callback:v=>v.toLocaleString('fr-FR')+' MAD'}}}}});
-new Chart(document.getElementById('chartTherapeutes'),{type:'doughnut',data:{labels:['Rachid Bensaid','Salma Lahlou','Amine Kadiri'],datasets:[{data:[42,35,23],backgroundColor:['#0f766e','#8b5cf6','#0ea5e9']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}});
-new Chart(document.getElementById('chartTraitements'),{type:'bar',data:{labels:['Rééducation genou','Kiné dos','Masso-thérapie','Kiné respiratoire','Rééducation épaule','Autres'],datasets:[{label:'Patients',data:[45,38,32,28,22,18],backgroundColor:['#0f766e','#14b8a6','#8b5cf6','#0ea5e9','#f59e0b','#94a3b8']}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
-new Chart(document.getElementById('chartOccupation'),{type:'bar',data:{labels:['Lun 1','Mar 2','Mer 3','Jeu 4','Ven 5','Sam 6','Dim 7'],datasets:[{label:'Occupation %',data:[85,92,78,88,95,45,30],backgroundColor:function(ctx){return ctx.raw>80?'#0f766e':ctx.raw>50?'#f59e0b':'#dc2626'},borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'}}}}});
+if (!KinoeAuth.protect(['admin', 'secretaire'])) throw new Error('auth');
+KinoeAuth.hook();
+var ROLE = KinoeAuth.ROLE_LABEL[KinoeAuth.current().role];
+</script>
+<script>
+(function () {
+  var MOIS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+
+  function monthKey(d) { return d.slice(3); }
+  function fmt(n) { return n.toLocaleString('fr-FR'); }
+
+  /* --- Paiements --- */
+  var pays = KinoeDB.paiements().filter(function (p) { return p.statut === 'Reçu'; });
+  var byMois = {};
+  pays.forEach(function (p) { byMois[monthKey(p.date)] = (byMois[monthKey(p.date)] || 0) + p.montant; });
+  var moisKeys = Object.keys(byMois).sort();
+  var total2026 = 0;
+  moisKeys.forEach(function (k) { total2026 += byMois[k]; });
+  var moisCourant = '/09/2026';
+  var courant = byMois[moisCourant] || 0;
+  var prevMois = '/08/2026';
+  var precedent = byMois[prevMois] || 0;
+  var croiss = precedent ? Math.round(((courant - precedent) / precedent) * 1000) / 10 : 0;
+
+  /* --- Rendez-vous --- */
+  var rdvs = KinoeDB.rendezvous();
+  function parseDMY(s) { var p = String(s).split('/'); return p.length === 3 ? new Date(+p[2], +p[1] - 1, +p[0]) : null; }
+  var sem = rdvs.filter(function (r) { var d = parseDMY(r.date); return d && d.getMonth() === 8 && d.getFullYear() === 2026 && r.statut !== 'Annulé'; });
+  function jourSem(s) { var d = parseDMY(s); return d ? d.getDay() : -1; }
+  var occParJour = [0, 0, 0, 0, 0, 0, 0];
+  sem.forEach(function (r) { var j = jourSem(r.date); if (j > 0 && j <= 6) occParJour[j]++; });
+  var CRENEAUX = 30;
+  var occData = [occParJour[1], occParJour[2], occParJour[3], occParJour[4], occParJour[5], occParJour[6], occParJour[0]]
+    .map(function (n) { return Math.min(100, Math.round((n / CRENEAUX) * 100)); });
+  var occMoy = Math.round((sem.length / (6 * CRENEAUX)) * 100);
+
+  /* --- KPIs --- */
+  document.getElementById('kpRevTotal').textContent = fmt(total2026) + ' MAD';
+  document.getElementById('kpPat').textContent = KinoeDB.patients().length;
+  document.getElementById('kpRdv').textContent = rdvs.filter(function (r) { return r.date.indexOf('/09/2026') !== -1; }).length;
+  document.getElementById('kpOcc').textContent = occMoy + '%';
+  document.getElementById('kpCroiss').textContent = (croiss >= 0 ? '+' : '') + croiss + '%';
+  document.getElementById('kpRetard').textContent = KinoeDB.factures().filter(function (f) { return f.statut === 'En retard'; }).length;
+
+  /* --- Charts --- */
+  new Chart(document.getElementById('chartRevenus'), {
+    type: 'line',
+    data: { labels: moisKeys.map(function (k) { return MOIS[+k.slice(0, 2) - 1]; }), datasets: [{ label: 'Encaissements (MAD)', data: moisKeys.map(function (k) { return byMois[k]; }), borderColor: '#0f766e', backgroundColor: 'rgba(15,118,110,.1)', fill: true, tension: .4, pointRadius: 4 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: function (v) { return v.toLocaleString('fr-FR') + ' MAD'; } } } } }
+  });
+
+  var parThep = {};
+  sem.forEach(function (r) { parThep[r.therapeuteId] = (parThep[r.therapeuteId] || 0) + 1; });
+  var thLabels = [], thData = [], thColors = [];
+  Object.keys(parThep).forEach(function (id) {
+    var e = KinoeDB.employe(id);
+    thLabels.push(e ? 'Dr. ' + e.nom : id);
+    thData.push(parThep[id]);
+    thColors.push(id === 'E001' ? '#0f766e' : id === 'E002' ? '#7c3aed' : id === 'E003' ? '#2563eb' : id === 'E005' ? '#b45309' : '#be185d');
+  });
+  new Chart(document.getElementById('chartTherapeutes'), {
+    type: 'doughnut',
+    data: { labels: thLabels, datasets: [{ data: thData, backgroundColor: thColors }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+  });
+
+  var parTrait = {};
+  KinoeDB.dossiers().forEach(function (d) { parTrait[d.traitement] = (parTrait[d.traitement] || 0) + 1; });
+  var trLabels = Object.keys(parTrait), trData = trLabels.map(function (k) { return parTrait[k]; });
+  new Chart(document.getElementById('chartTraitements'), {
+    type: 'bar',
+    data: { labels: trLabels, datasets: [{ label: 'Dossiers', data: trData, backgroundColor: '#0f766e' }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+  });
+
+  new Chart(document.getElementById('chartOccupation'), {
+    type: 'bar',
+    data: { labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'], datasets: [{ label: 'Occupation %', data: occData, backgroundColor: function (ctx) { return ctx.raw > 80 ? '#0f766e' : ctx.raw > 50 ? '#f59e0b' : '#dc2626'; }, borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100, ticks: { callback: function (v) { return v + '%'; } } } } }
+  });
+})();
 </script>
 </body>
 </html>

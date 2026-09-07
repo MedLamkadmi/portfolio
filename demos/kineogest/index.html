@@ -171,10 +171,10 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
   <!-- Topbar -->
   <header class="topbar">
     <button class="hamburger d-lg-none" onclick="document.getElementById('sidebar').classList.toggle('show')">☰</button>
-    <input type="text" class="search" placeholder="🔍 Rechercher un patient, un rendez-vous, un document…" readonly>
+    <input type="text" class="search" placeholder="🔍 Rechercher un patient, un rendez-vous, un document…" readonly onclick="location.href='rechercher.html'">
     <div class="right">
-      <a href="#" class="text-decoration-none" style="font-size:20px;color:#636e72"><i class="bi bi-bell"></i></a>
-      <a href="#" class="text-decoration-none" style="font-size:20px;color:#636e72"><i class="bi bi-envelope"></i></a>
+      <a href="rappels-sms.html" class="text-decoration-none" style="font-size:20px;color:#636e72" title="Rappels SMS"><i class="bi bi-bell"></i></a>
+      <a href="rechercher.html" class="text-decoration-none" style="font-size:20px;color:#636e72" title="Rechercher"><i class="bi bi-envelope"></i></a>
       <div class="avatar">RK</div>
     </div>
   </header>
@@ -193,7 +193,7 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
         <h1>Tableau de bord</h1>
         <small>lundi 7 septembre 2026 · Cabinet de kinésithérapie</small>
       </div>
-      <button class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i> Nouveau rendez-vous</button>
+      <button class="btn btn-primary" onclick="location.href='rendez-vous.html'"><i class="bi bi-plus-lg me-1"></i> Nouveau rendez-vous</button>
     </div>
 
     <!-- ===== STATS ===== -->
@@ -205,10 +205,10 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
               <span class="stat-label">Rendez-vous</span>
               <i class="bi bi-calendar2-check stat-icon"></i>
             </div>
-            <div class="stat-value">12</div>
+            <div class="stat-value" id="stRdv">0</div>
             <div class="d-flex align-items-center gap-2 mt-1">
-              <span class="stat-delta up"><i class="bi bi-arrow-up"></i> +2 vs lundi dernier</span>
-              <span class="stat-pill">3 à venir</span>
+              <span class="stat-delta up"><i class="bi bi-arrow-up"></i> <span id="stRdvUp">0</span></span>
+              <span class="stat-pill" id="stRdvPill">0 à venir</span>
             </div>
           </div>
         </div>
@@ -220,8 +220,8 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
               <span class="stat-label">Patients actifs</span>
               <i class="bi bi-people stat-icon" style="color:#0ea5e9"></i>
             </div>
-            <div class="stat-value">268</div>
-            <span class="stat-delta up"><i class="bi bi-arrow-up"></i> +14 ce mois</span>
+            <div class="stat-value" id="stPat">0</div>
+            <span class="stat-delta up"><i class="bi bi-arrow-up"></i> <span id="stPatDelta">0</span> ce mois</span>
           </div>
         </div>
       </div>
@@ -232,8 +232,8 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
               <span class="stat-label">Revenus du mois</span>
               <i class="bi bi-cash-stack stat-icon" style="color:#f59e0b"></i>
             </div>
-            <div class="stat-value">84 500 <small style="font-size:14px">MAD</small></div>
-            <span class="stat-delta down"><i class="bi bi-arrow-down"></i> −4% vs juillet</span>
+            <div class="stat-value"><span id="stRev">0</span> <small style="font-size:14px">MAD</small></div>
+            <span class="stat-delta down"><i class="bi bi-arrow-down"></i> encaissements de <span id="stRevMois">septembre</span></span>
           </div>
         </div>
       </div>
@@ -244,8 +244,8 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
               <span class="stat-label">Employés</span>
               <i class="bi bi-person-gear stat-icon" style="color:#8b5cf6"></i>
             </div>
-            <div class="stat-value">8</div>
-            <span class="stat-delta down"><i class="bi bi-arrow-down"></i> 1 poste vacant</span>
+            <div class="stat-value" id="stEmp">0</div>
+            <span class="stat-delta down"><i class="bi bi-arrow-down"></i> <span id="stEmpDelta">0</span> poste vacant</span>
           </div>
         </div>
       </div>
@@ -263,13 +263,8 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
         <div class="table-responsive">
           <table class="table mb-0">
             <thead><tr><th>Heure</th><th>Patient</th><th>Thérapeute</th><th>Traitement</th><th>Statut</th></tr></thead>
-            <tbody>
-              <tr><td class="fw-semibold">09:00</td><td>Kenza Alaoui</td><td><span class="emp-avatar">RB</span>Rachid Bensaid</td><td>Rééducation du genou</td><td><span class="badge-status badge-ok">Confirmé</span></td></tr>
-              <tr><td class="fw-semibold">09:45</td><td>Omar Haddad</td><td><span class="emp-avatar">SL</span>Salma Lahlou</td><td>Kiné du dos</td><td><span class="badge-status badge-ok">Confirmé</span></td></tr>
-              <tr><td class="fw-semibold">10:30</td><td>Yasmine Tazi</td><td><span class="emp-avatar">RB</span>Rachid Bensaid</td><td>Masso-thérapie</td><td><span class="badge-status badge-warn">En attente</span></td></tr>
-              <tr><td class="fw-semibold">11:15</td><td>Mehdi Chraibi</td><td><span class="emp-avatar">SL</span>Salma Lahlou</td><td>Suivi post-opératoire</td><td><span class="badge-status badge-ok">Confirmé</span></td></tr>
-              <tr><td class="fw-semibold">12:00</td><td>Ilham Ziani</td><td><span class="emp-avatar">AK</span>Amine Kadiri</td><td>Kiné respiratoire</td><td><span class="badge-status badge-sms">Rappel SMS</span></td></tr>
-              <tr><td class="fw-semibold">14:30</td><td>Nabil Fassi</td><td><span class="emp-avatar">AK</span>Amine Kadiri</td><td>Rééducation épaule</td><td><span class="badge-status badge-ok">Confirmé</span></td></tr>
+            <tbody id="todayBody">
+            <tr><td colspan="5" class="text-center text-muted py-4">Aucun rendez-vous aujourd'hui.</td></tr>
             </tbody>
           </table>
         </div>
@@ -286,13 +281,13 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
         </div>
         <div class="activity-item">
           <div class="act-icon" style="background:#dcfce7;color:#16a34a"><i class="bi bi-chat-dots"></i></div>
-          <div class="act-text"><b>Rappels SMS envoyés</b><span>24 patients notifiés automatiquement</span></div>
-          <span class="badge-status badge-ok">Envoyé</span>
+          <div class="act-text"><b>Rappels SMS envoyés</b><span id="actSms">—</span></div>
+          <span class="badge-status badge-ok" id="actSmsBadge">—</span>
         </div>
         <div class="activity-item">
           <div class="act-icon" style="background:#fef3c7;color:#d97706"><i class="bi bi-receipt"></i></div>
-          <div class="act-text"><b>Factures en attente</b><span>6 factures · 3 200 MAD</span></div>
-          <span class="badge-status badge-warn">À relancer</span>
+          <div class="act-text"><b>Factures en attente</b><span id="actFacts">—</span></div>
+          <span class="badge-status badge-warn" id="actFactsBadge">À relancer</span>
         </div>
       </div>
     </div>
@@ -306,13 +301,9 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
       <div class="table-responsive">
         <table class="table mb-0">
           <thead><tr><th>Employé</th><th>Rôle</th><th>Spécialité</th><th>Planning</th><th>Statut</th></tr></thead>
-          <tbody>
-            <tr><td><span class="emp-avatar">RB</span>Rachid Bensaid</td><td>Kinésithérapeute</td><td>Rééducation sportive</td><td>Lun–Ven · 09h–18h</td><td><span class="badge-status badge-ok">Actif</span></td></tr>
-            <tr><td><span class="emp-avatar">SL</span>Salma Lahlou</td><td>Kinésithérapeute</td><td>Masso-kinésithérapie</td><td>Lun–Sam · 08h–17h</td><td><span class="badge-status badge-ok">Actif</span></td></tr>
-            <tr><td><span class="emp-avatar">AK</span>Amine Kadiri</td><td>Kinésithérapeute</td><td>Kiné respiratoire</td><td>Lun–Ven · 10h–19h</td><td><span class="badge-status badge-ok">Actif</span></td></tr>
-            <tr><td><span class="emp-avatar">NF</span>Nadia Fikri</td><td>Secrétaire</td><td>Accueil / planning</td><td>Lun–Ven · 09h–17h</td><td><span class="badge-status badge-ok">Actif</span></td></tr>
-            <tr><td><span class="emp-avatar" style="background:#f1f5f9;color:#64748b">BH</span>Bilal Haddadi</td><td>Kinésithérapeute</td><td>—</td><td>—</td><td><span class="badge-status badge-gray">Poste vacant</span></td></tr>
-          </tbody>
+<tbody id="empBody">
+            <tr><td colspan="5" class="text-center text-muted py-4">Chargement…</td></tr>
+            </tbody>
         </table>
       </div>
     </div>
@@ -326,13 +317,9 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
       <div class="table-responsive">
         <table class="table mb-0">
           <thead><tr><th>Document</th><th>Patient / Employé</th><th>Type</th><th>Date</th></tr></thead>
-          <tbody>
-            <tr><td>Ordonnance — rééducation genou</td><td>Kenza Alaoui</td><td><span class="badge-status badge-gray">Prescription</span></td><td>05/09/2026</td></tr>
-            <tr><td>Radiographie RX genou (D)</td><td>Kenza Alaoui</td><td><span class="badge-status badge-gray">Imagerie</span></td><td>05/09/2026</td></tr>
-            <tr><td>Contrat de travail — Amine Kadiri</td><td>Amine Kadiri</td><td><span class="badge-status badge-rh">RH</span></td><td>01/09/2026</td></tr>
-            <tr><td>Compte rendu — bilan S1</td><td>Omar Haddad</td><td><span class="badge-status badge-gray">Bilan</span></td><td>02/09/2026</td></tr>
-            <tr><td>Attestation JOUR — Nadia Fikri</td><td>Nadia Fikri</td><td><span class="badge-status badge-rh">RH</span></td><td>28/08/2026</td></tr>
-          </tbody>
+<tbody id="docBody">
+            <tr><td colspan="4" class="text-center text-muted py-4">Aucun document.</td></tr>
+            </tbody>
         </table>
       </div>
     </div>
@@ -346,6 +333,7 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/db.js"></script>
+<script src="js/ui.js"></script>
 <script src="js/auth.js"></script>
 <script>
 if (!KinoeAuth.protect(['admin', 'secretaire', 'kine'])) throw new Error('auth');
@@ -359,32 +347,111 @@ KinoeAuth.hook();
 })();
 </script>
 <script>
-/* Activity chart (Chart.js — matches Mazer style) */
-const ctx = document.getElementById('activityChart');
-if(ctx){
-  new Chart(ctx,{
-    type:'bar',
-    data:{
-      labels:['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],
-      datasets:[{
-        label:'Rendez-vous',
-        data:[30,36,28,42,51,39,47],
-        backgroundColor:'rgba(15,118,110,.75)',
-        borderRadius:6,
-        borderSkipped:false
-      }]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
-      scales:{
-        y:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{font:{size:11},color:'#94a3b8'}},
-        x:{grid:{display:false},ticks:{font:{size:11},color:'#94a3b8'}}
-      }
-    }
+(function () {
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function today() {
+    var d = new Date();
+    return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear();
+  }
+  function parseDMY(s) {
+    var p = String(s).split('/');
+    if (p.length !== 3) return null;
+    return new Date(+p[2], +p[1] - 1, +p[0]);
+  }
+
+  var rdvs = KinoeDB.rendezvous();
+  var t = today();
+
+  /* ---- Stats ---- */
+  document.getElementById('stRdv').textContent = rdvs.length;
+  var futurs = rdvs.filter(function (r) { return r.date >= t && r.statut !== 'Annulé'; }).length;
+  document.getElementById('stRdvUp').textContent = futurs + ' à venir';
+  document.getElementById('stRdvPill').textContent = rdvs.filter(function (r) { return r.date === t; }).length + ' aujourd\'hui';
+
+  document.getElementById('stPat').textContent = KinoeDB.patients().length;
+  document.getElementById('stPatDelta').textContent = KinoeDB.dossiers().length + ' dossiers';
+
+  var sep = KinoeDB.paiements().filter(function (p) { return p.statut === 'Reçu' && p.date.indexOf('/09/2026') !== -1; });
+  document.getElementById('stRev').textContent = sep.reduce(function (a, p) { return a + p.montant; }, 0).toLocaleString('fr-FR');
+
+  var emps = KinoeDB.employes();
+  document.getElementById('stEmp').textContent = emps.length;
+  document.getElementById('stEmpDelta').textContent = emps.filter(function (e) { return e.statut === 'Poste vacant'; }).length;
+
+  /* ---- Rendez-vous du jour ---- */
+  var todayRdvs = rdvs.filter(function (r) { return r.date === t && r.statut !== 'Annulé'; })
+    .sort(function (a, b) { return a.heure.localeCompare(b.heure); });
+  var tb = document.getElementById('todayBody');
+  tb.innerHTML = '';
+  if (!todayRdvs.length) tb.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Aucun rendez-vous aujourd\'hui.</td></tr>';
+  todayRdvs.forEach(function (r) {
+    var badge = r.statut === 'Confirmé' ? 'badge-ok' : r.statut === 'En attente' ? 'badge-warn' : 'badge-gray';
+    tb.innerHTML += '<tr><td class="fw-semibold">' + r.heure + '</td>' +
+      '<td>' + (r.patient ? '<span class="emp-avatar">' + r.patient.initiales + '</span>' + r.patient.nom : '—') + '</td>' +
+      '<td>' + (r.therapeute ? '<span class="emp-avatar">' + r.therapeute.initiales + '</span>' + r.therapeute.nom : '—') + '</td>' +
+      '<td>' + r.traitement + '</td>' +
+      '<td><span class="badge-status ' + badge + '">' + r.statut + '</span></td></tr>';
   });
-}
+
+  /* ---- Activité ---- */
+  document.getElementById('actSms').textContent = futurs + ' rappels programmés sur les rendez-vous à venir';
+  document.getElementById('actSmsBadge').textContent = 'Programmés';
+  var factsAtt = KinoeDB.factures().filter(function (f) { return f.statut === 'En attente' || f.statut === 'En retard'; });
+  document.getElementById('actFacts').textContent = factsAtt.length + ' factures · ' + KinoeUI.fmtMAD(factsAtt.reduce(function (a, f) { return a + f.montant; }, 0));
+
+  /* ---- Employés ---- */
+  var eb = document.getElementById('empBody');
+  eb.innerHTML = '';
+  emps.forEach(function (e) {
+    var stBadge = e.statut === 'Poste vacant' ? 'badge-gray' : 'badge-ok';
+    eb.innerHTML += '<tr><td><span class="emp-avatar">' + e.initiales + '</span>' + e.nom + '</td>' +
+      '<td>' + e.role + '</td>' +
+      '<td>' + (e.specialite && e.specialite !== '—' ? e.specialite : '—') + '</td>' +
+      '<td>' + (e.planning || '—') + '</td>' +
+      '<td><span class="badge-status ' + stBadge + '">' + e.statut + '</span></td></tr>';
+  });
+
+  /* ---- Documents récents ---- */
+  var docs = KinoeDB.documents().slice().sort(function (a, b) { return b.date.localeCompare(a.date); }).slice(0, 5);
+  var dbb = document.getElementById('docBody');
+  dbb.innerHTML = '';
+  if (!docs.length) dbb.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Aucun document.</td></tr>';
+  docs.forEach(function (x) {
+    var owner = x.ownerType === 'patient' ? KinoeDB.patient(x.ownerId) : KinoeDB.employe(x.ownerId);
+    dbb.innerHTML += '<tr><td>' + x.nom + '</td><td>' + (owner ? owner.nom : '—') + '</td>' +
+      '<td><span class="badge-status badge-gray">' + x.type + '</span></td><td>' + x.date + '</td></tr>';
+  });
+
+  /* ---- Chart ---*/
+  var wd = [0, 0, 0, 0, 0, 0, 0];
+  rdvs.forEach(function (r) { var p = parseDMY(r.date); if (p) wd[p.getDay()]++; });
+  var chartData = [wd[1], wd[2], wd[3], wd[4], wd[5], wd[6], wd[0]];
+  var ctx = document.getElementById('activityChart');
+  if (ctx) {
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+        datasets: [{
+          label: 'Rendez-vous',
+          data: chartData,
+          backgroundColor: 'rgba(15,118,110,.75)',
+          borderRadius: 6,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 }, color: '#94a3b8' } },
+          x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#94a3b8' } }
+        }
+      }
+    });
+  }
+})();
 </script>
 </body>
 </html>

@@ -96,16 +96,22 @@
 
   /* Rendez-vous : [id, date JJ/MM/AAAA, heure, patientId, thérapeuteId, traitement, statut] */
   var RENDEZVOUS = [
-    ["RDV-001", "07/09/2026", "08:00", "P001", "E001", "Rééducation du genou", "Confirmé"],
-    ["RDV-002", "07/09/2026", "08:30", "P002", "E002", "Kiné du dos", "Confirmé"],
-    ["RDV-003", "07/09/2026", "09:00", "P003", "E003", "Masso-thérapie", "En attente"],
-    ["RDV-004", "08/09/2026", "10:00", "P004", "E001", "Suivi post-opératoire", "Confirmé"],
-    ["RDV-005", "08/09/2026", "10:30", "P005", "E002", "Kiné respiratoire", "Annulé"],
-    ["RDV-006", "09/09/2026", "11:00", "P006", "E003", "Rééducation épaule", "Confirmé"],
-    ["RDV-007", "09/09/2026", "14:00", "P007", "E001", "Rééducation cheville", "En attente"],
-    ["RDV-008", "10/09/2026", "09:30", "P008", "E002", "Kiné pédiatrique", "Confirmé"],
-    ["RDV-009", "11/09/2026", "15:00", "P009", "E003", "Drainage lymphatique", "Annulé"],
-    ["RDV-010", "12/09/2026", "16:00", "P010", "E001", "Rééducation main", "Confirmé"]
+    ["RDV-001", "07/09/2026", "08:00", "P001", "E002", "Rééducation du genou", "Confirmé"],
+    ["RDV-002", "07/09/2026", "08:30", "P002", "E001", "Kiné dos", "Confirmé"],
+    ["RDV-003", "07/09/2026", "09:00", "P003", "E001", "Rééducation sportive", "En attente"],
+    ["RDV-004", "08/09/2026", "10:00", "P004", "E007", "Kiné dos", "Confirmé"],
+    ["RDV-005", "08/09/2026", "10:30", "P005", "E003", "Kiné respiratoire", "Annulé"],
+    ["RDV-006", "09/09/2026", "11:00", "P006", "E002", "Masso-kinésithérapie", "Confirmé"],
+    ["RDV-007", "09/09/2026", "14:00", "P007", "E002", "Rééducation genou", "En attente"],
+    ["RDV-008", "10/09/2026", "09:30", "P008", "E001", "Kiné dos", "Confirmé"],
+    ["RDV-009", "11/09/2026", "15:00", "P009", "E005", "Rééducation pédiatrique", "Annulé"],
+    ["RDV-010", "12/09/2026", "16:00", "P010", "E001", "Rééducation sportive", "Confirmé"],
+    ["RDV-011", "07/09/2026", "14:30", "P004", "E007", "Kiné dos", "Confirmé"],
+    ["RDV-012", "08/09/2026", "09:00", "P005", "E003", "Kiné respiratoire", "Confirmé"],
+    ["RDV-013", "09/09/2026", "15:00", "P008", "E001", "Kiné dos", "En attente"],
+    ["RDV-014", "10/09/2026", "14:00", "P010", "E001", "Rééducation sportive", "Confirmé"],
+    ["RDV-015", "11/09/2026", "10:00", "P009", "E005", "Rééducation pédiatrique", "Confirmé"],
+    ["RDV-016", "12/09/2026", "09:00", "P002", "E001", "Kiné dos", "En attente"]
   ];
 
   /* Dossiers médicaux : [patientId, âge, sexe, dernière visite, traitement, thérapeuteId, notes] */

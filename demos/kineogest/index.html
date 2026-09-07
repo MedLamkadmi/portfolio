@@ -225,7 +225,7 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
           </div>
         </div>
       </div>
-      <div class="col">
+      <div class="col" id="revCol">
         <div class="card stat-card" style="border-left-color:#f59e0b">
           <div class="card-body">
             <div class="d-flex align-items-center justify-content-between mb-2">
@@ -234,6 +234,18 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
             </div>
             <div class="stat-value"><span id="stRev">0</span> <small style="font-size:14px">MAD</small></div>
             <span class="stat-delta down"><i class="bi bi-arrow-down"></i> encaissements de <span id="stRevMois">septembre</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="col" id="kineCol" style="display:none">
+        <div class="card stat-card" style="border-left-color:#f59e0b">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="stat-label">Patients suivis</span>
+              <i class="bi bi-people stat-icon" style="color:#f59e0b"></i>
+            </div>
+            <div class="stat-value" id="stSuivis">0</div>
+            <span class="stat-delta up"><i class="bi bi-arrow-up"></i> <span id="stKineInt">0</span> de mes interventions</span>
           </div>
         </div>
       </div>
@@ -284,10 +296,15 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
           <div class="act-text"><b>Rappels SMS envoyés</b><span id="actSms">—</span></div>
           <span class="badge-status badge-ok" id="actSmsBadge">—</span>
         </div>
-        <div class="activity-item">
+        <div class="activity-item" id="actFacItem">
           <div class="act-icon" style="background:#fef3c7;color:#d97706"><i class="bi bi-receipt"></i></div>
           <div class="act-text"><b>Factures en attente</b><span id="actFacts">—</span></div>
           <span class="badge-status badge-warn" id="actFactsBadge">À relancer</span>
+        </div>
+        <div class="activity-item" id="actIntItem" style="display:none">
+          <div class="act-icon" style="background:#dcfce7;color:#16a34a"><i class="bi bi-clipboard2-pulse"></i></div>
+          <div class="act-text"><b>Interventions enregistrées</b><span id="actIntLocal">—</span></div>
+          <span class="badge-status badge-ok" id="actIntBadge">Dans les dossiers</span>
         </div>
       </div>
     </div>
@@ -312,7 +329,7 @@ body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
     <div class="card card-panel mb-4">
       <div class="panel-head">
         <h6><i class="bi bi-folder2-open me-2 text-primary"></i>Documents récents</h6>
-        <a href="documents.html">Tous les fichiers →</a>
+        <a href="documents.html" id="docAllLink">Tous les fichiers →</a>
       </div>
       <div class="table-responsive">
         <table class="table mb-0">
@@ -374,6 +391,16 @@ KinoeAuth.hook();
   var sep = KinoeDB.paiements().filter(function (p) { return p.statut === 'Reçu' && p.date.indexOf('/09/2026') !== -1; });
   document.getElementById('stRev').textContent = sep.reduce(function (a, p) { return a + p.montant; }, 0).toLocaleString('fr-FR');
 
+  /* Confidentialité financière : la carte « Revenus du mois » est remplacée pour les kinés. */
+  var u = KinoeAuth.current();
+  var isKine = u && u.role === 'kine';
+  document.getElementById('revCol').style.display = isKine ? 'none' : '';
+  document.getElementById('kineCol').style.display = isKine ? '' : 'none';
+  if (isKine) {
+    document.getElementById('stSuivis').textContent = KinoeDB.suivis(u.id).length;
+    document.getElementById('stKineInt').textContent = KinoeDB.interventions().filter(function (i) { return i.therapeuteId === u.id; }).length;
+  }
+
   var emps = KinoeDB.employes();
   document.getElementById('stEmp').textContent = emps.length;
   document.getElementById('stEmpDelta').textContent = emps.filter(function (e) { return e.statut === 'Poste vacant'; }).length;
@@ -398,6 +425,11 @@ KinoeAuth.hook();
   document.getElementById('actSmsBadge').textContent = 'Programmés';
   var factsAtt = KinoeDB.factures().filter(function (f) { return f.statut === 'En attente' || f.statut === 'En retard'; });
   document.getElementById('actFacts').textContent = factsAtt.length + ' factures · ' + KinoeUI.fmtMAD(factsAtt.reduce(function (a, f) { return a + f.montant; }, 0));
+  if (isKine) {
+    document.getElementById('actFacItem').style.display = 'none';
+    document.getElementById('actIntItem').style.display = '';
+    document.getElementById('actIntLocal').textContent = KinoeDB.interventions().length + ' interventions tracées sur les dossiers';
+  }
 
   /* ---- Employés ---- */
   var eb = document.getElementById('empBody');
@@ -412,7 +444,9 @@ KinoeAuth.hook();
   });
 
   /* ---- Documents récents ---- */
-  var docs = KinoeDB.documents().slice().sort(function (a, b) { return b.date.localeCompare(a.date); }).slice(0, 5);
+  if (isKine) document.getElementById('docAllLink').setAttribute('href', 'dossiers-medicaux.html');
+  var docs = KinoeDB.documents().filter(function (x) { return !isKine || x.ownerType === 'patient'; })
+    .slice().sort(function (a, b) { return b.date.localeCompare(a.date); }).slice(0, 5);
   var dbb = document.getElementById('docBody');
   dbb.innerHTML = '';
   if (!docs.length) dbb.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Aucun document.</td></tr>';

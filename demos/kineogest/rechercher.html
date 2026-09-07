@@ -220,10 +220,8 @@ var TEL = {
 };
 
 function lastVisit(patientId) {
-  var cur = KinoeAuth.current();
-  var mine = cur && cur.role === 'kine' ? cur.id : null;
   var dates = KinoeDB.rendezvous()
-    .filter(function (r) { return r.patientId === patientId && (!mine || r.therapeuteId === mine); })
+    .filter(function (r) { return r.patientId === patientId; })
     .map(function (r) { return r.date; });
   if (!dates.length) return '—';
   dates.sort(function (a, b) { return b.localeCompare(a); });
@@ -247,9 +245,7 @@ function renderResults() {
   var nr = document.getElementById('check-rendezvous').checked;
   var nd = document.getElementById('check-documents').checked;
   var cur = KinoeAuth.current();
-  var mine = cur && cur.role === 'kine' ? cur.id : null;
-  var myClients = {};
-  if (mine) { (KinoeAuth.clientIds() || []).forEach(function (id) { myClients[id] = 1; }); }
+  var isKine = cur && cur.role === 'kine';
   document.getElementById('resPatients').innerHTML = '';
   document.getElementById('resRdv').innerHTML = '';
   document.getElementById('resDocs').innerHTML = '';
@@ -273,7 +269,7 @@ function renderResults() {
   if (nq) {
     var found = KinoeDB.patients().filter(function (p) {
       return p.id.toLowerCase().indexOf(q) !== -1 || p.nom.toLowerCase().indexOf(q) !== -1;
-    }).filter(function (p) { return !mine || myClients[p.id]; });
+    });
     document.getElementById('cPatients').textContent = found.length;
     if (!found.length) { document.getElementById('resPatients').appendChild(emptyBox()); }
     found.forEach(function (p) {
@@ -298,7 +294,7 @@ function renderResults() {
         r.traitement.toLowerCase().indexOf(q) !== -1 ||
         (r.patient && r.patient.nom.toLowerCase().indexOf(q) !== -1) ||
         (r.therapeute && r.therapeute.nom.toLowerCase().indexOf(q) !== -1);
-    }).filter(function (r) { return !mine || r.therapeuteId === mine; });
+    });
     document.getElementById('cRdv').textContent = foundR.length;
     if (!foundR.length) { document.getElementById('resRdv').appendChild(emptyBox()); }
     foundR.forEach(function (r) {
@@ -322,7 +318,7 @@ function renderResults() {
         d.type.toLowerCase().indexOf(q) !== -1 ||
         d.date.indexOf(q) !== -1 ||
         (d.ownerNom && d.ownerNom.toLowerCase().indexOf(q) !== -1);
-    }).filter(function (d) { return !mine || (d.ownerType === 'patient' && myClients[d.ownerId]); });
+    }).filter(function (d) { return !isKine || d.ownerType === 'patient'; });
     document.getElementById('cDocs').textContent = foundD.length;
     if (!foundD.length) { document.getElementById('resDocs').appendChild(emptyBox()); }
     foundD.forEach(function (d) {

@@ -390,7 +390,6 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
 if (!KinoeAuth.protect(['admin', 'secretaire', 'kine'])) throw new Error('auth');
 KinoeAuth.hook();
 (function () {
-  var me = KinoeAuth.current();
   var DIM = 6;
   var DATES = [];
   for (var i = 0; i < DIM; i++) {
@@ -403,10 +402,9 @@ KinoeAuth.hook();
     if (tcols[c]) tcols[c].textContent = DAYS[c - 1] + ' ' + DATES[c - 1].slice(0, 5);
   }
 
-  /* --- Données selon le rôle --- */
+  /* --- Données : planning complet partagé entre kinés --- */
   var rdvs = KinoeDB.rendezvous().filter(function (r) {
     if (r.statut === 'Annulé') return false;
-    if (me.role === 'kine' && r.therapeuteId !== me.id) return false;
     return DATES.indexOf(r.date) !== -1;
   });
 
@@ -418,10 +416,10 @@ KinoeAuth.hook();
     byCell[k].push(r);
   });
 
-  /* --- Légende --- */
+  /* --- Légende : toute l'équipe --- */
   var legend = document.getElementById('legendBox');
   legend.innerHTML = '';
-  var kin = KinoeDB.employes().filter(function (e) { return e.role === 'Kinésithérapeute' && e.statut !== 'Poste vacant' && (me.role !== 'kine' || e.id === me.id); });
+  var kin = KinoeDB.employes().filter(function (e) { return e.role === 'Kinésithérapeute' && e.statut !== 'Poste vacant'; });
   kin.forEach(function (e) {
     var color = CLS[e.id] ? (e.id === 'E001' ? '#0f766e' : e.id === 'E002' ? '#7c3aed' : e.id === 'E003' ? '#2563eb' : e.id === 'E005' ? '#b45309' : '#be185d') : '#94a3b8';
     legend.innerHTML += '<span class="legend-item"><span class="legend-dot" style="background:' + color + '"></span> ' + e.nom + ' (' + e.initiales + ')</span>';

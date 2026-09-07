@@ -334,7 +334,6 @@ function renderTable() {
   var q = document.getElementById('fSearch').value.trim().toLowerCase();
   var cur = KinoeAuth.current();
   var list = KinoeDB.rendezvous().filter(function (r) {
-    if (cur && cur.role === 'kine' && r.therapeuteId !== cur.id) return false;
     if (fDate && r.date !== fDate) return false;
     if (fTherapeute && r.therapeuteId !== fTherapeute) return false;
     if (fStatut && r.statut !== fStatut) return false;
@@ -373,19 +372,19 @@ function fillSelects() {
   th2.innerHTML = '';
   KinoeDB.employes().forEach(function (e) {
     if (e.role === 'Kinésithérapeute') {
-      if (isKine && e.id !== cur.id) return;
-      var o = document.createElement('option');
-      o.value = e.id; o.textContent = e.nom;
-      th.appendChild(o); th2.appendChild(o.cloneNode(true));
+      var o1 = document.createElement('option');
+      o1.value = e.id; o1.textContent = e.nom;
+      th.appendChild(o1);
+      if (!isKine || e.id === cur.id) {
+        var o2 = document.createElement('option');
+        o2.value = e.id; o2.textContent = e.nom;
+        th2.appendChild(o2);
+      }
     }
   });
   var sel = document.getElementById('rPatient');
   sel.innerHTML = '';
   var pats = KinoeDB.patients();
-  if (isKine) {
-    var ids = {}; (KinoeAuth.clientIds() || []).forEach(function (id) { ids[id] = 1; });
-    pats = pats.filter(function (p) { return ids[p.id]; });
-  }
   pats.forEach(function (p) {
     var o = document.createElement('option');
     o.value = p.id; o.textContent = p.nom;

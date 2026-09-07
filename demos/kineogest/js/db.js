@@ -128,6 +128,31 @@
     ["P010", 26, "F", "06/09/2026", "Rééducation sportive", "E001", "Rupture coiffe rotateurs G — programme excentrique."]
   ];
 
+  /* Interventions : [id, patientId, thérapeuteId, date, type, durée (min), note].
+     Historique de suivi partagé : « qui a fait quoi, quand — qui a donné le relais et à qui ». */
+  var INTERVENTIONS = [
+    ["INT-001", "P001", "E002", "05/09/2026", "Séance", 45, "Post-op TKA droite — stimulation quadriceps, mobilisation passive 0-110°."],
+    ["INT-002", "P001", "E007", "26/08/2026", "Séance", 40, "Relais pendant congés de SL — reprise proprioception et travail excentrique."],
+    ["INT-003", "P002", "E001", "02/09/2026", "Séance", 40, "Lombalgie chronique — renforcement lombaire, gainage, reprise du port de charges."],
+    ["INT-004", "P002", "E003", "21/08/2026", "Séance", 35, "Relais — éducation thérapeutique + étirements extenseurs du tronc."],
+    ["INT-005", "P003", "E001", "04/09/2026", "Séance", 40, "Entorse cheville G — proprioception, excentriques, réathlétisation douce."],
+    ["INT-006", "P003", "E005", "15/08/2026", "Séance", 30, "Relais pendant congés d'été — reprogrammation neuromusculaire."],
+    ["INT-007", "P004", "E007", "03/09/2026", "Séance", 45, "Hernie discale L4-L5 — drainage postural, mobilisation analytique, ceinture."],
+    ["INT-008", "P004", "E002", "19/08/2026", "Séance", 40, "Relais ponctuel — massage + auto-postures d'antéversion réduite."],
+    ["INT-009", "P005", "E003", "04/09/2026", "Séance", 35, "BPCO stade 2 — gainage thoracique, exercices ventilatoires dirigés."],
+    ["INT-010", "P005", "E001", "12/08/2026", "Bilan", 30, "Bilan respiratoire initial — tests de souffle, plan de soins établi."],
+    ["INT-011", "P006", "E002", "01/09/2026", "Séance", 45, "Tendinopathie supra-épineux — ondes de choc, travail excentrique dosé."],
+    ["INT-012", "P006", "E001", "06/08/2026", "Bilan", 40, "Bilan d'entrée — amplitude, force, protocole proposé."],
+    ["INT-013", "P007", "E002", "06/09/2026", "Séance", 40, "LCA — renforcement quadriceps + électrostimulation, proprioception."],
+    ["INT-014", "P007", "E005", "22/08/2026", "Séance", 35, "Relais estival — poursuite du renforcement progressif, échelle de charge."],
+    ["INT-015", "P008", "E001", "28/08/2026", "Séance", 45, "Sténose lombaire — programme de marche progressif, décoaptation."],
+    ["INT-016", "P008", "E003", "10/08/2026", "Séance", 40, "Relais — mobilisation douce et exercices respiratoires SS."],
+    ["INT-017", "P009", "E005", "30/08/2026", "Séance", 30, "Accompagnement enfant (retard de marche) — séance parents + jeu moteur."],
+    ["INT-018", "P009", "E002", "14/08/2026", "Évaluation", 35, "Évaluation tonus et motricité globale, guidance parentale."],
+    ["INT-019", "P010", "E001", "06/09/2026", "Séance", 40, "Rupture coiffe rotateurs G — programme excentrique, scapula-humérale."],
+    ["INT-020", "P010", "E005", "18/08/2026", "Bilan", 35, "Bilan en relais — mobilité, verticalisation, Pilates."]
+  ];
+
   /* Documents : [id, nom, type, ownerType ("patient"/"employe"), ownerId, date, taille (Ko)] */
   var DOCUMENTS = [
     ["DOC-001", "Ordonnance — rééducation genou", "Prescription", "patient", "P001", "05/09/2026", 245],
@@ -260,6 +285,16 @@
     });
   }
 
+  function interventions() {
+    return INTERVENTIONS.map(function (i) {
+      return {
+        id: i[0], patientId: i[1], patient: patientById(i[1]),
+        therapeuteId: i[2], therapeute: employeById(i[2]),
+        date: i[3], type: i[4], duree: i[5], note: i[6]
+      };
+    }).sort(function (a, b) { return b.date.localeCompare(a.date); });
+  }
+
   function documents() {
     return DOCUMENTS.map(function (d) {
       var owner = d[3] === "employe" ? employeById(d[4]) : patientById(d[4]);
@@ -328,6 +363,15 @@
     });
     return "P" + pad3(max + 1);
   }
+  function nextIntv() {
+    var src = (load() ? db() : { interventions: interventions() }).interventions;
+    var max = 0;
+    src.forEach(function (i) {
+      var n = parseInt(i.id.replace("INT-", ""), 10);
+      if (n > max) max = n;
+    });
+    return "INT-" + pad3(max + 1);
+  }
   function initials(nom) {
     return String(nom || "").trim().split(/\s+/).slice(0, 2).map(function (w) {
       return w.charAt(0).toUpperCase();
@@ -346,13 +390,20 @@
     return {
       patients: patients(), employes: employes(), factures: factures(),
       rendezvous: rendezvous(), dossiers: dossiers(), documents: documents(),
-      paiements: paiements()
+      paiements: paiements(), interventions: interventions()
     };
   }
 
   function db() {
     var d = load();
-    if (!d) { d = seed(); save(d); }
+    if (!d) {
+      d = seed();
+      save(d);
+    } else if (!d.interventions) {
+      /* Migration : base existante sans historique d'interventions. */
+      d.interventions = interventions();
+      save(d);
+    }
     return d;
   }
 
@@ -522,6 +573,108 @@
         }
       });
       save(d);
+    },
+
+    /* --- Interventions / suivi partagé --- */
+    interventionsSorted: function (list) {
+      function n(s) { var p = String(s).split('/'); return (+p[2]) * 10000 + (+p[1]) * 100 + (+p[0]); }
+      return list.slice().sort(function (a, b) { return n(b.date) - n(a.date); });
+    },
+    interventions: function () {
+      return db().interventions.slice().sort(function (a, b) {
+        function n(s) { var p = String(s).split('/'); return (+p[2]) * 10000 + (+p[1]) * 100 + (+p[0]); }
+        return n(b.date) - n(a.date);
+      });
+    },
+    interventionsFor: function (patientId) {
+      return db().interventions.filter(function (i) { return i.patientId === patientId; });
+    },
+    addIntervention: function (data) {
+      var d = db();
+      var rec = {
+        id: nextIntv(), patientId: data.patientId, patient: dbPatient(data.patientId),
+        therapeuteId: data.therapeuteId, therapeute: dbEmploye(data.therapeuteId),
+        date: data.date, type: data.type, duree: Number(data.duree) || 30,
+        note: data.note || ""
+      };
+      d.interventions.push(rec);
+      /* « Reprise du suivi » : le référent du dossier bascule vers le kiné qui reprend. */
+      if (data.type === "Reprise du suivi") {
+        d.dossiers.forEach(function (x) {
+          if (x.patientId === data.patientId && x.therapeuteId !== data.therapeuteId) {
+            x.therapeuteId = data.therapeuteId;
+            x.therapeute = dbEmploye(data.therapeuteId);
+          }
+        });
+      }
+      save(d);
+      return rec;
+    },
+    updateIntervention: function (id, data) {
+      var d = db();
+      d.interventions.forEach(function (i) {
+        if (i.id === id) {
+          if (data.date) i.date = data.date;
+          if (data.therapeuteId) { i.therapeuteId = data.therapeuteId; i.therapeute = dbEmploye(data.therapeuteId); }
+          if (data.type) i.type = data.type;
+          if (data.duree != null) i.duree = Number(data.duree) || 30;
+          if ("note" in data) i.note = data.note || "";
+        }
+      });
+      save(d);
+    },
+    /* Équipe de suivi d'un patient : référent + tous les kinés ayant déjà intervenu. */
+    equipe: function (patientId) {
+      var d = db();
+      var dos = null;
+      d.dossiers.forEach(function (x) { if (x.patientId === patientId) dos = x; });
+      var refId = dos ? dos.therapeuteId : null;
+      var byId = {};
+      (d.interventions || []).forEach(function (i) {
+        if (i.patientId !== patientId) return;
+        if (!byId[i.therapeuteId]) {
+          var e = dbEmploye(i.therapeuteId);
+          byId[i.therapeuteId] = {
+            therapeuteId: i.therapeuteId, nom: e ? e.nom : "—",
+            initiales: e ? e.initiales : "—", interventions: 0, referent: false
+          };
+        }
+        byId[i.therapeuteId].interventions++;
+      });
+      if (refId && !byId[refId]) {
+        var r = dbEmploye(refId);
+        byId[refId] = {
+          therapeuteId: refId, nom: r ? r.nom : "—",
+          initiales: r ? r.initiales : "—", interventions: 0, referent: false
+        };
+      }
+      var list = [];
+      Object.keys(byId).forEach(function (k) {
+        byId[k].referent = (k === refId);
+        list.push(byId[k]);
+      });
+      list.sort(function (a, b) {
+        return (a.referent ? 0 : 1) - (b.referent ? 0 : 1) || a.nom.localeCompare(b.nom);
+      });
+      return list;
+    },
+    /* Patients suivis par un kiné : référents + patients sur lesquels il a déjà intervenu. */
+    suivis: function (employeId) {
+      var d = db();
+      var ids = {};
+      d.dossiers.forEach(function (x) {
+        if (x.therapeuteId === employeId) ids[x.patientId] = 1;
+      });
+      (d.interventions || []).forEach(function (i) {
+        if (i.therapeuteId === employeId) ids[i.patientId] = 1;
+      });
+      var out = [];
+      Object.keys(ids).forEach(function (k) {
+        var dos = null;
+        d.dossiers.forEach(function (x) { if (x.patientId === k) dos = x; });
+        if (dos) out.push(dos);
+      });
+      return out;
     },
 
     /* --- Documents --- */

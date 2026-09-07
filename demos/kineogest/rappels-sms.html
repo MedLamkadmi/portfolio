@@ -293,11 +293,7 @@ function prevDay(dmy) {
 
 function buildRappels() {
   var over = loadOverrides();
-  var cur = KinoeAuth.current();
-  var mine = cur && cur.role === 'kine' ? cur.id : null;
-  return KinoeDB.rendezvous().filter(function (r) {
-    return !mine || r.therapeuteId === mine;
-  }).map(function (r) {
+  return KinoeDB.rendezvous().map(function (r) {
     var statut = over[r.id] || (r.statut === 'En attente' ? 'En attente' : (r.statut === 'Annulé' ? 'Échoué' : 'Livré'));
     var message = 'Rappel: Vous avez un rendez-vous demain à ' + r.heure + ' avec ' + (r.therapeute ? 'Dr. ' + r.therapeute.nom : 'votre thérapeute') + ' — ' + r.traitement;
     return {
@@ -327,6 +323,7 @@ function renderTable() {
   var d2 = document.getElementById('fFin').value.trim();
   var fStatut = document.getElementById('fStatut').value;
   var q = document.getElementById('fPatient').value.trim().toLowerCase();
+  var isReadOnly = !!KinoeAuth.current() && KinoeAuth.current().role === 'kine';
   var list = buildRappels().filter(function (r) {
     if (d1 && r.envoyee.slice(0, 10) < d1) return false;
     if (d2 && r.envoyee.slice(0, 10) > d2) return false;
@@ -347,14 +344,16 @@ function renderTable() {
       '<td>' + r.tel + '</td>' +
       '<td style="max-width:300px">' + r.message + '</td>' +
       '<td>' + KinoeUI.badgeSms(r.statut) + '</td>' +
-      '<td>' + (r.statut === 'En attente'
+      '<td>' + (r.statut === 'En attente' && !isReadOnly
         ? '<button class="btn btn-sm btn-outline-success" onclick="sendSms(\'' + r.id + '\')"><i class="bi bi-send me-1"></i>Envoyer</button>'
-        : '<small class="text-muted">' + r.envoyee.slice(0, 5) + '</small>') + '</td>';
+        : (isReadOnly ? '<small class="text-muted">Lecture seule</small>' : '<small class="text-muted">' + r.envoyee.slice(0, 5) + '</small>')) + '</td>';
     body.appendChild(tr);
   });
 }
 
 function sendSms(id) {
+  var c = KinoeAuth.current();
+  if (c && c.role === 'kine') { KinoeUI.toast('⚠️ Rappels SMS en lecture seule pour les kinés.'); return; }
   var over = loadOverrides();
   over[id] = 'Livré';
   saveOverrides(over);

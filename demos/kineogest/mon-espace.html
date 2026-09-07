@@ -353,10 +353,10 @@ function renderStats() {
     return c;
   }
   if (me.role === 'kine') {
-    row.appendChild(card('bi-people', '#ccfbf1', '#0f766e', '…', 'Mes clients', 'stClients'));
+    row.appendChild(card('bi-people', '#ccfbf1', '#0f766e', '…', 'Patients suivis', 'stClients'));
     row.appendChild(card('bi-calendar-check', '#dcfce7', '#16a34a', '…', 'RDV aujourd\'hui', 'stToday'));
     row.appendChild(card('bi-calendar-week', '#e0f2fe', '#0369a1', '…', 'RDV cette semaine', 'stWeek'));
-    row.appendChild(card('bi-journal-text', '#fef3c7', '#d97706', '…', 'Dossiers actifs', 'stDos'));
+    row.appendChild(card('bi-clipboard2-pulse', '#fef3c7', '#d97706', '…', 'Mes interventions', 'stDos'));
   } else if (me.role === 'secretaire') {
     row.appendChild(card('bi-calendar-check', '#dcfce7', '#16a34a', '…', 'RDV à venir', 'stFutur'));
     row.appendChild(card('bi-people', '#ccfbf1', '#0f766e', '…', 'Patients', 'stPat'));
@@ -375,9 +375,9 @@ function fillStats() {
   var rdvs = KinoeDB.rendezvous();
   var dossiers = KinoeDB.dossiers();
   if (me.role === 'kine') {
-    var ids = KinoeAuth.clientIds() || [];
-    document.getElementById('stClients').textContent = ids.length;
-    document.getElementById('stDos').textContent = dossiers.filter(function (d) { return d.therapeuteId === me.id; }).length;
+    var mes = KinoeDB.suivis(me.id);
+    document.getElementById('stClients').textContent = mes.length;
+    document.getElementById('stDos').textContent = KinoeDB.interventions().filter(function (i) { return i.therapeuteId === me.id; }).length;
     var mine = rdvs.filter(function (r) { return r.therapeuteId === me.id && r.statut !== 'Annulé'; });
     document.getElementById('stToday').textContent = mine.filter(function (r) { return r.date === today(); }).length;
     document.getElementById('stWeek').textContent = mine.filter(function (r) { return r.date >= today() && r.date <= nextWeek(); }).length;
@@ -403,13 +403,13 @@ function renderMain() {
 }
 
 function renderKineClients(box) {
-  var ids = KinoeAuth.clientIds() || [];
+  var suivis = KinoeDB.suivis(me.id);
   var card = document.createElement('div');
   card.className = 'card-panel';
   var head = document.createElement('div');
   head.className = 'panel-head';
-  head.innerHTML = '<h6><i class="bi bi-people me-2" style="color:var(--accent)"></i>Mes clients <span class="badge bg-secondary ms-1" style="font-size:11px">' + ids.length + '</span></h6>' +
-    '<a href="#"><i class="bi bi-arrow-right"></i></a>';
+  head.innerHTML = '<h6><i class="bi bi-people me-2" style="color:var(--accent)"></i>Patients dont je suis référent ou sur lesquels j\'ai déjà intervenu <span class="badge bg-secondary ms-1" style="font-size:11px">' + suivis.length + '</span></h6>' +
+    '<a href="dossiers-medicaux.html"><i class="bi bi-arrow-right"></i></a>';
   card.appendChild(head);
   var list = document.createElement('div');
   list.className = 'table-responsive';
@@ -420,24 +420,46 @@ function renderKineClients(box) {
   card.appendChild(list);
   box.appendChild(card);
   var body = document.getElementById('cliBody');
-  ids.forEach(function (pid) {
-    var p = KinoeDB.patient(pid);
+  suivis.forEach(function (d) {
+    var p = d.patient;
     if (!p) return;
-    var d = KinoeDB.dossier(pid);
-    var nr = nextRdvOf(pid);
+    var nr = nextRdvOf(d.patientId);
     var tr = document.createElement('tr');
     tr.innerHTML =
-      '<td><span class="emp-avatar">' + p.initiales + '</span>' + p.nom + '</td>' +
-      '<td>' + (TEL[pid] || '—') + '</td>' +
-      '<td>' + (d ? d.traitement : '—') + '</td>' +
-      '<td>' + (d ? d.derniereVisite : '—') + '</td>' +
+      '<td><span class="emp-avatar">' + p.initiales + '</span>' + p.nom +
+      (d.therapeuteId === me.id ? ' <span class="badge" style="background:#ccfbf1;color:#0f766e;font-size:10px">Référent</span>' : '') + '</td>' +
+      '<td>' + (TEL[d.patientId] || '—') + '</td>' +
+      '<td>' + (d.traitement || '—') + '</td>' +
+      '<td>' + (d.derniereVisite || '—') + '</td>' +
       '<td>' + (nr ? nr.date + ' ' + nr.heure : '<small class="text-muted">—</small>') + '</td>' +
       '<td style="white-space:nowrap">' +
       '<button class="action-btn action-view" title="Voir le dossier" onclick="location.href=\'dossiers-medicaux.html\'"><i class="bi bi-journal-text"></i></button>' +
-      '<button class="action-btn action-edit" title="Prendre un RDV" onclick="openRdv(\'' + pid + '\')"><i class="bi bi-calendar-plus"></i></button>' +
+      '<button class="action-btn action-edit" title="Prendre un RDV" onclick="openRdv(\'' + d.patientId + '\')"><i class="bi bi-calendar-plus"></i></button>' +
       '</td>';
     body.appendChild(tr);
   });
+  if (!suivis.length) {
+    body.innerHTML = '<tr><td colspan="6" class="text-center text-muted" style="font-size:13px;padding:24px">Aucun patient attaché à votre suivi pour l\'instant.</td></tr>';
+  }
+
+  var mine = KinoeDB.interventions().filter(function (i) { return i.therapeuteId === me.id; }).slice(0, 6);
+  var card2 = document.createElement('div');
+  card2.className = 'card-panel mt-3';
+  var head2 = document.createElement('div');
+  head2.className = 'panel-head';
+  head2.innerHTML = '<h6><i class="bi bi-clipboard2-pulse me-2" style="color:var(--accent)"></i>Mes dernières interventions <span class="badge bg-secondary ms-1" style="font-size:11px">' + mine.length + '</span></h6>' +
+    '<a href="dossiers-medicaux.html"><i class="bi bi-arrow-right"></i></a>';
+  card2.appendChild(head2);
+  var box2 = document.createElement('div');
+  card2.appendChild(box2);
+  if (!mine.length) box2.innerHTML = '<div class="p-4 text-center text-muted" style="font-size:13px">Aucune intervention enregistrée pour le moment.</div>';
+  mine.forEach(function (i) {
+    var div = document.createElement('div');
+    div.className = 'todo-item';
+    div.innerHTML = '<span class="todo-dot" style="background:var(--accent)"></span><div style="flex:1;font-size:13px"><div class="fw-semibold">' + (i.patient ? i.patient.nom : '—') + ' <small class="text-muted">' + i.date + ' · ' + i.duree + ' min</small></div><div class="text-muted" style="font-size:12px">' + i.type + ' — ' + i.note + '</div></div>';
+    box2.appendChild(div);
+  });
+  box.appendChild(card2);
 }
 
 function suiviCard(title, icon, color, rows) {
@@ -660,11 +682,8 @@ function fillTherapeuteSelects() {
 function fillPatientSelect() {
   var sel = document.getElementById('nrPatient');
   sel.innerHTML = '';
+  /* Accès partagé : chaque kiné peut créer un RDV pour n'importe quel patient du cabinet. */
   var pats = KinoeDB.patients().slice().sort(function (a, b) { return a.nom.localeCompare(b.nom); });
-  if (me && me.role === 'kine') {
-    var set = {}; (KinoeAuth.clientIds() || []).forEach(function (id) { set[id] = 1; });
-    pats = pats.filter(function (p) { return set[p.id]; });
-  }
   pats.forEach(function (p) {
     var o = document.createElement('option');
     o.value = p.id;

@@ -171,6 +171,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
               <th>Dernière visite</th>
               <th>Traitement</th>
               <th>Thérapeute</th>
+              <th>Équipe</th>
               <th>Notes</th>
               <th style="width:90px">Actions</th>
             </tr>
@@ -189,6 +190,13 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
     </div>
   </div>
 </div>
+
+<!-- Styles localisés (équipe de suivi, historique) -->
+<style>
+.team-avatar{width:28px;height:28px;font-size:10px;cursor:default}
+.team-referent{outline:2px solid var(--accent);outline-offset:1px}
+.hist-item{padding:9px 11px;border:1px solid #eef2f7;border-left:3px solid var(--accent);border-radius:8px;margin-bottom:8px;background:#fff}
+</style>
 
 <!-- ===== MODAL Modifier ===== -->
 <div class="modal fade" id="dosModal" tabindex="-1">
@@ -251,14 +259,72 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
         <div class="inv-view-row"><span class="text-muted">Âge / Sexe</span><span class="fw-semibold" id="viewAge"></span></div>
         <div class="inv-view-row"><span class="text-muted">Dernière visite</span><span class="fw-semibold" id="viewVisite"></span></div>
         <div class="inv-view-row"><span class="text-muted">Traitement</span><span id="viewTraitement"></span></div>
-        <div class="inv-view-row"><span class="text-muted">Thérapeute</span><span class="fw-semibold" id="viewTherapeute"></span></div>
+        <div class="inv-view-row"><span class="text-muted">Référent</span><span class="fw-semibold" id="viewTherapeute"></span></div>
+        <div class="mt-3">
+          <div class="text-muted" style="font-size:12px;font-weight:600">Équipe de suivi</div>
+          <div id="viewTeam" class="mt-1 d-flex flex-wrap gap-2 align-items-center"></div>
+        </div>
+        <div class="mt-3">
+          <div class="text-muted" style="font-size:12px;font-weight:600">Historique des interventions</div>
+          <div id="viewHist" class="mt-1"></div>
+        </div>
         <div class="mt-3">
           <div class="text-muted" style="font-size:12px;font-weight:600">Notes cliniques</div>
           <div id="viewNotes" class="mt-1" style="font-size:13.5px"></div>
         </div>
       </div>
       <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-primary d-none" id="intOpenBtn" onclick="openIntForm(currentPatientId)"><i class="bi bi-plus-lg me-1"></i>Ajouter une intervention</button>
         <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL Nouvelle intervention ===== -->
+<div class="modal fade" id="intModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">Nouvelle intervention</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="intPatient">
+        <div class="mb-3">
+          <div class="form-label" style="font-size:13px;font-weight:600">Patient</div>
+          <div class="fw-semibold" id="intPatientNom"></div>
+        </div>
+        <div class="row g-3">
+          <div class="col-4">
+            <label class="form-label" style="font-size:13px">Date</label>
+            <input id="intDate" type="text" class="form-control" placeholder="07/09/2026">
+          </div>
+          <div class="col-4">
+            <label class="form-label" style="font-size:13px">Type</label>
+            <input id="intType" class="form-control" list="intTypeList" placeholder="Séance">
+            <datalist id="intTypeList">
+              <option>Séance</option>
+              <option>Bilan</option>
+              <option>Évaluation</option>
+              <option>Compte rendu</option>
+              <option>Reprise du suivi</option>
+            </datalist>
+          </div>
+          <div class="col-4">
+            <label class="form-label" style="font-size:13px">Durée (min)</label>
+            <input id="intDuree" type="number" min="5" value="30" class="form-control">
+          </div>
+        </div>
+        <div class="mt-3">
+          <label class="form-label" style="font-size:13px">Compte rendu / note</label>
+          <textarea id="intNote" class="form-control" rows="3" placeholder="Ce que vous avez fait lors de cette prise en charge…"></textarea>
+        </div>
+        <div class="form-text mt-2"><i class="bi bi-people"></i> L'intervention est horodatée et attribuée à son auteur dans l'historique du patient — même si un autre kiné assure le suivi. Choisir <b>Reprise du suivi</b> fait basculer le référent du dossier vers vous.</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm" style="background:var(--accent);color:#fff" onclick="saveIntervention()"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
       </div>
     </div>
   </div>
@@ -293,9 +359,7 @@ function renderTable() {
   var q = document.getElementById('fSearch').value.trim().toLowerCase();
   var fTraitement = document.getElementById('fTraitement').value;
   var fTherapeute = document.getElementById('fTherapeute').value;
-  var cur = KinoeAuth.current();
   var list = KinoeDB.dossiers().filter(function (d) {
-    if (cur && cur.role === 'kine' && d.therapeuteId !== cur.id) return false;
     if (fTraitement && d.traitement !== fTraitement) return false;
     if (fTherapeute && d.therapeuteId !== fTherapeute) return false;
     if (q && d.patient && d.patient.nom.toLowerCase().indexOf(q) === -1) return false;
@@ -314,6 +378,7 @@ function renderTable() {
       '<td>' + d.derniereVisite + '</td>' +
       '<td>' + KinoeUI.badgeSpecialite(d.traitement) + '</td>' +
       '<td>' + (d.therapeute ? d.therapeute.nom : '—') + '</td>' +
+      '<td>' + teamChips(d.patientId) + '</td>' +
       '<td class="text-muted notes-cell" title="' + d.notes.replace(/"/g, '&quot;') + '">' + d.notes + '</td>' +
       '<td style="white-space:nowrap">' +
         '<button class="action-btn action-view" title="Voir" onclick="openView(\'' + d.patientId + '\')"><i class="bi bi-eye"></i></button>' +
@@ -321,6 +386,17 @@ function renderTable() {
       '</td>';
     body.appendChild(tr);
   });
+}
+
+function teamChips(patientId) {
+  var eq = KinoeDB.equipe(patientId);
+  if (!eq.length) return '—';
+  var el = '<span class="d-inline-flex gap-1 align-items-center">';
+  eq.forEach(function (m) {
+    el += '<span class="emp-avatar team-avatar' + (m.referent ? ' team-referent' : '') + '" title="' + m.nom + (m.referent ? ' — référent' : '') + ' · ' + m.interventions + ' intervention(s)">' + m.initiales + '</span>';
+  });
+  el += '</span>';
+  return el;
 }
 
 function fillSelects() {
@@ -339,13 +415,13 @@ function fillSelects() {
   var sth = document.getElementById('dsTherapeute');
   KinoeDB.employes().forEach(function (e) {
     if (e.role === 'Kinésithérapeute') {
-      if (isKine && e.id !== cur.id) return;
       var o1 = document.createElement('option'); o1.value = e.id; o1.textContent = e.nom; fth.appendChild(o1);
       var o2 = document.createElement('option'); o2.value = e.id; o2.textContent = e.nom; sth.appendChild(o2);
     }
   });
-  if (isKine && sth.options.length) { sth.value = cur.id; sth.disabled = true; }
-  else sth.disabled = false;
+  /* Accès partagé : le filtre thérapeute liste toute l'équipe.
+     Seul le référent du dossier reste verrouillé pour un kiné (réaffectation = admin/secrétaire). */
+  sth.disabled = isKine;
 }
 
 function openEdit(patientId) {
@@ -380,15 +456,95 @@ function saveDossier() {
 }
 
 function openView(patientId) {
+  currentPatientId = patientId;
   var d = KinoeDB.dossier(patientId);
   if (!d) return;
+  var me = KinoeAuth.current();
   document.getElementById('viewNom').textContent = d.patient ? d.patient.nom : patientId;
   document.getElementById('viewAge').textContent = d.age + ' ans — ' + d.sexe;
   document.getElementById('viewVisite').textContent = d.derniereVisite;
   document.getElementById('viewTraitement').innerHTML = KinoeUI.badgeSpecialite(d.traitement);
   document.getElementById('viewTherapeute').textContent = d.therapeute ? d.therapeute.nom : '—';
   document.getElementById('viewNotes').textContent = d.notes || '—';
+  var team = document.getElementById('viewTeam');
+  team.innerHTML = '';
+  KinoeDB.equipe(patientId).forEach(function (m) { team.appendChild(teamChip(m)); });
+  if (!team.children.length) team.innerHTML = '<div class="text-muted" style="font-size:13px">Aucun intervenant enregistré.</div>';
+  var hist = document.getElementById('viewHist');
+  hist.innerHTML = '';
+  var ints = KinoeDB.interventionsFor(patientId).slice();
+  ints.sort(function (a, b) {
+    function n(s) { var p = String(s).split('/'); return (+p[2]) * 10000 + (+p[1]) * 100 + (+p[0]); }
+    return n(b.date) - n(a.date);
+  });
+  if (!ints.length) {
+    hist.innerHTML = '<div class="text-muted" style="font-size:13px">Aucune intervention enregistrée.</div>';
+  } else {
+    ints.forEach(function (i) { hist.appendChild(histItem(i)); });
+  }
+  var btn = document.getElementById('intOpenBtn');
+  btn.classList.toggle('d-none', !me || me.role === 'secretaire');
   KinoeUI.openModal('viewModal');
+}
+
+function teamChip(m) {
+  var el = document.createElement('span');
+  el.className = 'emp-avatar team-avatar' + (m.referent ? ' team-referent' : '');
+  el.style.cssText = 'width:28px;height:28px;font-size:10px;cursor:default';
+  el.title = m.nom + (m.referent ? ' — référent' : '') + ' · ' + m.interventions + ' intervention(s)';
+  el.textContent = m.initiales;
+  return el;
+}
+
+function histItem(i) {
+  var d = document.createElement('div');
+  d.className = 'hist-item';
+  var reprise = i.type === 'Reprise du suivi';
+  d.innerHTML =
+    '<div class="d-flex align-items-start gap-2">' +
+      '<span class="emp-avatar" style="width:26px;height:26px;font-size:10px">' + ((i.therapeute || {}).initiales || '—') + '</span>' +
+      '<div style="flex:1;font-size:13px">' +
+        '<div class="fw-semibold">' + (i.therapeute ? i.therapeute.nom : '—') +
+        (reprise ? ' <span class="badge" style="background:#fef3c7;color:#92400e;font-size:10px">Reprise du suivi</span>' : '') +
+        ' <small class="text-muted float-end">' + i.date + ' · ' + i.duree + ' min</small></div>' +
+        '<div class="text-muted" style="font-size:11.5px">' + i.type + '</div>' +
+        '<div class="mt-1">' + i.note + '</div>' +
+      '</div>' +
+    '</div>';
+  return d;
+}
+
+var currentPatientId = null;
+function openIntForm(patientId) {
+  currentPatientId = patientId;
+  var dos = KinoeDB.dossier(patientId);
+  document.getElementById('intPatient').value = patientId;
+  document.getElementById('intPatientNom').textContent = dos && dos.patient ? dos.patient.nom : patientId;
+  document.getElementById('intDate').value = todayStr();
+  document.getElementById('intType').value = '';
+  document.getElementById('intDuree').value = 30;
+  document.getElementById('intNote').value = '';
+  KinoeUI.openModal('intModal');
+}
+function todayStr() {
+  var n = new Date();
+  return String(n.getDate()).padStart(2, '0') + '/' + String(n.getMonth() + 1).padStart(2, '0') + '/' + n.getFullYear();
+}
+function saveIntervention() {
+  var patientId = document.getElementById('intPatient').value;
+  var date = document.getElementById('intDate').value.trim();
+  var type = document.getElementById('intType').value.trim();
+  var duree = document.getElementById('intDuree').value;
+  var note = document.getElementById('intNote').value.trim();
+  var me = KinoeAuth.current();
+  if (!me) return;
+  if (!date) { KinoeUI.toast('⚠️ La date est requise.'); return; }
+  if (!type) { KinoeUI.toast('⚠️ Le type d\'intervention est requis.'); return; }
+  KinoeDB.addIntervention({ patientId: patientId, therapeuteId: me.id, date: date, type: type, duree: duree, note: note });
+  KinoeUI.closeModal('intModal');
+  KinoeUI.toast('Intervention enregistrée dans l\'historique du patient.');
+  renderUI();
+  if (document.getElementById('viewModal').classList.contains('show')) openView(patientId);
 }
 
 function exportCSV() {

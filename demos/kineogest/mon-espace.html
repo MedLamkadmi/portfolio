@@ -53,6 +53,13 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
 .welcome{background:linear-gradient(120deg,#0f766e,#134e4a);border-radius:12px;padding:20px 24px;color:#fff;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .welcome .av{width:54px;height:54px;border-radius:14px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800}
 .welcome small{opacity:.85;font-size:12.5px}
+.welcome.sec{background:linear-gradient(120deg,#312e81,#4c1d95)}
+.welcome.sec .av{background:rgba(167,139,250,.18);border-color:rgba(167,139,250,.45)}
+.sec-chip{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);border-radius:10px;padding:8px 14px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:8px}
+.security-strip{background:#f5f3ff;border:1px solid #ddd6fe;color:#4c1d95;border-radius:10px;padding:8px 14px;font-size:12.5px;display:flex;align-items:center;gap:10px}
+.todo-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid #f1f5f9;font-size:13px}
+.todo-item:last-of-type{border-bottom:none}
+.todo-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 .role-badge{font-size:11px;font-weight:700;border-radius:20px;padding:5px 12px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3)}
 .stat-card{background:#fff;border:none;border-radius:10px;box-shadow:0 1px 3px rgba(15,23,42,.08);padding:18px 20px;display:flex;align-items:center;gap:14px}
 .stat-card .stat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
@@ -145,8 +152,8 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
   <div class="p-4">
     <div class="page-header">
       <div>
-        <h1>Mon espace</h1>
-        <small>Espace personnel de l'employé — vos clients, votre planning</small>
+        <h1 id="pgTitle">Mon espace</h1>
+        <small id="pgSub">Espace personnel de l'employé — vos clients, votre planning</small>
       </div>
     </div>
 
@@ -316,12 +323,22 @@ function nextRdvOf(patientId) {
 
 function renderHeader() {
   me = KinoeAuth.current();
-  document.getElementById('welAv').textContent = me.initiales;
-  document.getElementById('welHello').textContent = 'Bonjour ' + (me.poste === 'Kinésithérapeute' ? 'Dr. ' : '') + me.nom;
-  document.getElementById('welSub').textContent =
-    (me.specialite && me.specialite !== '—' ? me.specialite + ' · ' : '') + new Date().toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+  var isSec = me.role === 'secretaire';
+  document.getElementById('pgTitle').textContent = isSec ? 'Accueil — Secrétariat' : 'Mon espace';
+  document.getElementById('pgSub').textContent = isSec
+    ? 'Front office du cabinet — agenda du jour, encaissements et suivi des patients'
+    : 'Espace personnel de l\'employé — vos clients, votre planning';
+  var wel = document.querySelector('.welcome');
+  wel.classList.toggle('sec', isSec);
+  var av = document.getElementById('welAv');
+  if (isSec) av.innerHTML = '<i class="bi bi-person-badge"></i>';
+  else av.textContent = me.initiales;
+  document.getElementById('welHello').textContent = 'Bonjour ' + (me.poste === 'Kinésithérapeute' ? 'Dr. ' : '') + me.nom + (isSec ? ' 👋' : '');
+  document.getElementById('welSub').textContent = isSec
+    ? today() + ' · ' + new Date().toLocaleDateString('fr-FR', { weekday: 'long' }) + ' · Cabinet ouvert'
+    : (me.specialite && me.specialite !== '—' ? me.specialite + ' · ' : '') + new Date().toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
   var rb = document.getElementById('welRole');
-  var icon = me.role === 'admin' ? 'shield-lock' : me.role === 'secretaire' ? 'pencil-square' : 'heart-pulse';
+  var icon = me.role === 'admin' ? 'shield-lock' : me.role === 'secretaire' ? 'person-badge' : 'heart-pulse';
   rb.innerHTML = '<i class="bi bi-' + icon + ' me-1"></i>' + KinoeAuth.ROLE_LABEL[me.role];
 }
 
@@ -381,7 +398,7 @@ function renderMain() {
   var box = document.getElementById('mainPanel');
   box.innerHTML = '';
   if (me.role === 'kine') renderKineClients(box);
-  else if (me.role === 'secretaire') renderSecretairePlanning(box);
+  else if (me.role === 'secretaire') renderSecretaireReception(box);
   else renderAdminOverview(box);
 }
 
@@ -423,35 +440,122 @@ function renderKineClients(box) {
   });
 }
 
-function renderSecretairePlanning(box) {
-  var rdvs = KinoeDB.rendezvous().filter(function (r) { return r.date >= today() && r.date <= nextWeek(); });
+function suiviCard(title, icon, color, rows) {
+  var col = document.createElement('div');
+  col.className = 'col-lg-4';
   var card = document.createElement('div');
-  card.className = 'card-panel';
+  card.className = 'card-panel h-100';
   var head = document.createElement('div');
   head.className = 'panel-head';
-  head.innerHTML = '<h6><i class="bi bi-calendar2-week me-2" style="color:#d97706"></i>Planning des 7 prochains jours <span class="badge bg-secondary ms-1" style="font-size:11px">' + rdvs.length + '</span></h6>' +
+  head.innerHTML = '<h6><i class="bi ' + icon + ' me-2" style="color:' + color + '"></i>' + title + '</h6>';
+  card.appendChild(head);
+  var box = document.createElement('div');
+  card.appendChild(box);
+  if (!rows.length) box.innerHTML = '<div class="p-4 text-center text-muted" style="font-size:13px">Rien à signaler.</div>';
+  rows.forEach(function (row) {
+    var div = document.createElement('div');
+    div.className = 'todo-item';
+    div.innerHTML = '<span class="todo-dot" style="background:' + color + '"></span>' + row + '';
+    box.appendChild(div);
+  });
+  col.appendChild(card);
+  return col;
+}
+
+function setRdvStatut(id) {
+  KinoeDB.updateRendezVous(id, { statut: 'Confirmé' });
+  KinoeUI.toast('RDV ' + id + ' confirmé.');
+  renderAll();
+}
+function cancelRdv(id) {
+  KinoeDB.updateRendezVous(id, { statut: 'Annulé' });
+  KinoeUI.toast('RDV ' + id + ' annulé.');
+  renderAll();
+}
+
+function renderSecretaireReception(box) {
+  var t = today();
+  var rdvToday = KinoeDB.rendezvous()
+    .filter(function (r) { return r.date === t && r.statut !== 'Annulé'; })
+    .sort(function (a, b) { return a.heure.localeCompare(b.heure); });
+
+  var alerts = KinoeDB.rendezvous().filter(function (r) { return r.date === t && r.statut === 'En attente'; });
+
+  var band = document.createElement('div');
+  band.className = 'd-flex flex-wrap align-items-center gap-2 mb-3';
+  band.innerHTML =
+    (alerts.length ? '<span class="sec-chip" style="background:#fef3c7;border-color:#fde68a;color:#92400e"><i class="bi bi-exclamation-triangle"></i>' + alerts.length + ' à confirmer aujourd\'hui</span>' : '') +
+    '<span class="sec-chip"><i class="bi bi-calendar3"></i>' + t + '</span>' +
+    '<span class="sec-chip"><i class="bi bi-people"></i>' + KinoeDB.patients().length + ' patients au cabinet</span>' +
+    '<span class="sec-chip"><i class="bi bi-cash-stack"></i>' + KinoeDB.factures().filter(function (f) { return f.statut === 'En attente' || f.statut === 'En retard'; }).length + ' factures à encaisser</span>';
+  box.appendChild(band);
+
+  var card = document.createElement('div');
+  card.className = 'card-panel mb-4';
+  var head = document.createElement('div');
+  head.className = 'panel-head';
+  head.innerHTML = '<h6><i class="bi bi-clock-history me-2" style="color:#7c3aed"></i>Agenda du jour · ' + t + '<span class="badge bg-secondary ms-2" style="font-size:11px">' + rdvToday.length + ' RDV</span></h6>' +
     '<a href="rendez-vous.html">Gérer le planning</a>';
   card.appendChild(head);
-  var list = document.createElement('div');
-  list.className = 'table-responsive';
-  var table = document.createElement('table');
-  table.className = 'table table-hover mb-0';
-  table.innerHTML = '<thead><tr><th>Date</th><th>Patient</th><th>Traitement</th><th>Thérapeute</th><th>Statut</th></tr></thead><tbody id="planBody"></tbody>';
-  list.appendChild(table);
-  card.appendChild(list);
+  var wrap = document.createElement('div');
+  wrap.className = 'table-responsive';
+  var tbl = document.createElement('table');
+  tbl.className = 'table table-hover mb-0';
+  tbl.innerHTML = '<thead><tr><th>Heure</th><th>Patient</th><th>Motif</th><th>Thérapeute</th><th>Statut</th><th style="width:110px">Actions</th></tr></thead><tbody id="secAgendaBody"></tbody>';
+  wrap.appendChild(tbl);
+  card.appendChild(wrap);
   box.appendChild(card);
-  var body = document.getElementById('planBody');
-  if (!rdvs.length) { body.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Aucun RDV à venir.</td></tr>'; }
-  rdvs.forEach(function (r) {
+
+  var body = document.getElementById('secAgendaBody');
+  if (!rdvToday.length) {
+    body.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Aucun rendez-vous aujourd\'hui.</td></tr>';
+  } else rdvToday.forEach(function (r) {
     var tr = document.createElement('tr');
     tr.innerHTML =
-      '<td><small>' + r.date + ' · ' + r.heure + '</small></td>' +
+      '<td><b>' + r.heure + '</b></td>' +
       '<td><span class="emp-avatar">' + (r.patient ? r.patient.initiales : '—') + '</span>' + (r.patient ? r.patient.nom : '—') + '</td>' +
       '<td>' + r.traitement + '</td>' +
       '<td>' + (r.therapeute ? 'Dr. ' + r.therapeute.nom : '—') + '</td>' +
-      '<td>' + KinoeUI.badgeRdv(r.statut) + '</td>';
+      '<td>' + KinoeUI.badgeRdv(r.statut) + '</td>' +
+      '<td style="white-space:nowrap">' +
+      (r.statut !== 'Confirmé' && r.statut !== 'Annulé' ? '<button class="action-btn action-view" title="Confirmer" onclick="setRdvStatut(\'' + r.id + '\')"><i class="bi bi-check-circle"></i></button>' : '') +
+      (r.statut !== 'Annulé' ? '<button class="action-btn action-del" title="Annuler" onclick="cancelRdv(\'' + r.id + '\')"><i class="bi bi-x-circle"></i></button>' : '') +
+      '</td>';
     body.appendChild(tr);
   });
+
+  var aConfirmer = KinoeDB.rendezvous()
+    .filter(function (r) { return r.statut === 'En attente' && r.date >= today(); })
+    .sort(function (a, b) { return (a.date + a.heure).localeCompare(b.date + b.heure); })
+    .slice(0, 4)
+    .map(function (r) {
+      return '<div style="flex:1">' + (r.patient ? '<b>' + r.patient.nom + '</b>' : '') +
+        '<br><small class="text-muted">' + r.date + ' · ' + r.heure + (r.therapeute ? ' · ' + r.therapeute.initiales : '') + '</small></div>' +
+        '<button class="action-btn action-view" title="Confirmer" onclick="setRdvStatut(\'' + r.id + '\')"><i class="bi bi-check2-circle"></i></button>';
+    });
+  var factAtt = KinoeDB.factures()
+    .filter(function (f) { return f.statut === 'En attente' || f.statut === 'En retard'; })
+    .slice(0, 4)
+    .map(function (f) {
+      var p = KinoeDB.patient(f.patientId);
+      return '<div style="flex:1"><b>' + (p ? p.nom : f.patientId) + '</b> — <span class="' + (f.statut === 'En retard' ? 'text-danger' : 'text-warning') + ' fw-semibold">' + KinoeUI.fmtMAD(f.montant) + '</span>' +
+        '<br><small class="text-muted">' + f.numero + ' · échéance ' + f.echeance + '</small></div>' +
+        '<a class="action-btn action-view" title="Régler" href="paiements.html"><i class="bi bi-arrow-right-circle"></i></a>';
+    });
+  var payRecents = KinoeDB.paiements()
+    .filter(function (p) { return p.statut === 'Reçu' && p.date.indexOf('/09/2026') !== -1; })
+    .slice(0, 4)
+    .map(function (p) {
+      var pat = KinoeDB.patient(p.patientId);
+      return '<div style="flex:1">' + (pat ? '<b>' + pat.nom + '</b>' : '') + ' — <span class="fw-semibold" style="color:#16a34a">+' + KinoeUI.fmtMAD(p.montant) + '</span>' +
+        '<br><small class="text-muted">' + p.reference + ' · ' + p.methode + '</small></div>';
+    });
+  var suivi = document.createElement('div');
+  suivi.className = 'row g-3';
+  suivi.appendChild(suiviCard('Factures à régler', 'bi-receipt', '#d97706', factAtt));
+  suivi.appendChild(suiviCard('RDV à confirmer', 'bi-calendar2-check', '#0369a1', aConfirmer));
+  suivi.appendChild(suiviCard('Encaissements du mois', 'bi-cash-coin', '#16a34a', payRecents));
+  box.appendChild(suivi);
 }
 
 function renderAdminOverview(box) {

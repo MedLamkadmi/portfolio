@@ -313,6 +313,20 @@
     });
     return "E" + pad3(max + 1);
   }
+  function nextPatient() {
+    var src = (load() ? db() : { patients: patients() }).patients;
+    var max = 0;
+    src.forEach(function (p) {
+      var n = parseInt(p.id.replace("P", ""), 10);
+      if (n > max) max = n;
+    });
+    return "P" + pad3(max + 1);
+  }
+  function initials(nom) {
+    return String(nom || "").trim().split(/\s+/).slice(0, 2).map(function (w) {
+      return w.charAt(0).toUpperCase();
+    }).join("") || "—";
+  }
 
   /* ---------- Couche de stockage ---------- */
   function load() {
@@ -357,6 +371,17 @@
     /* --- Patients --- */
     patients: function () { return db().patients; },
     patient: function (id) { return dbPatient(id); },
+    addPatient: function (data) {
+      var d = db();
+      if (!data || !data.nom) return null;
+      var rec = {
+        id: nextPatient(), nom: data.nom,
+        initiales: data.initiales || initials(data.nom)
+      };
+      d.patients.push(rec);
+      save(d);
+      return rec;
+    },
 
     /* --- Employés --- */
     employes: function () { return db().employes.slice(); },

@@ -319,6 +319,11 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/db.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/auth.js"></script>
+<script>
+if (!KinoeAuth.protect(['admin', 'secretaire', 'kine'])) throw new Error('auth');
+KinoeAuth.hook();
+</script>
 <script>
 var editingId = null;
 
@@ -327,7 +332,9 @@ function renderTable() {
   var fTherapeute = document.getElementById('fTherapeute').value;
   var fStatut = document.getElementById('fStatut').value;
   var q = document.getElementById('fSearch').value.trim().toLowerCase();
+  var cur = KinoeAuth.current();
   var list = KinoeDB.rendezvous().filter(function (r) {
+    if (cur && cur.role === 'kine' && r.therapeuteId !== cur.id) return false;
     if (fDate && r.date !== fDate) return false;
     if (fTherapeute && r.therapeuteId !== fTherapeute) return false;
     if (fStatut && r.statut !== fStatut) return false;
@@ -358,12 +365,15 @@ function renderTable() {
 }
 
 function fillSelects() {
+  var cur = KinoeAuth.current();
+  var isKine = cur && cur.role === 'kine';
   var th = document.getElementById('fTherapeute');
   th.innerHTML = '<option value="">Tous</option>';
   var th2 = document.getElementById('rTherapeute');
   th2.innerHTML = '';
   KinoeDB.employes().forEach(function (e) {
     if (e.role === 'Kinésithérapeute') {
+      if (isKine && e.id !== cur.id) return;
       var o = document.createElement('option');
       o.value = e.id; o.textContent = e.nom;
       th.appendChild(o); th2.appendChild(o.cloneNode(true));
@@ -371,11 +381,18 @@ function fillSelects() {
   });
   var sel = document.getElementById('rPatient');
   sel.innerHTML = '';
-  KinoeDB.patients().forEach(function (p) {
+  var pats = KinoeDB.patients();
+  if (isKine) {
+    var ids = {}; (KinoeAuth.clientIds() || []).forEach(function (id) { ids[id] = 1; });
+    pats = pats.filter(function (p) { return ids[p.id]; });
+  }
+  pats.forEach(function (p) {
     var o = document.createElement('option');
     o.value = p.id; o.textContent = p.nom;
     sel.appendChild(o);
   });
+  if (isKine && th2.options.length) { th2.value = cur.id; th2.disabled = true; }
+  else th2.disabled = false;
 }
 
 function openRdvModal() {
@@ -388,6 +405,8 @@ function openRdvModal() {
   document.getElementById('rTherapeute').value = 'E001';
   document.getElementById('rTraitement').value = '';
   document.getElementById('rStatut').value = 'Confirmé';
+  var cur = KinoeAuth.current();
+  if (cur && cur.role === 'kine') { document.getElementById('rTherapeute').value = cur.id; }
 }
 
 function saveRdv() {

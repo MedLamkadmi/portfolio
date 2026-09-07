@@ -277,6 +277,11 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/db.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/auth.js"></script>
+<script>
+if (!KinoeAuth.protect(['admin', 'secretaire', 'kine'])) throw new Error('auth');
+KinoeAuth.hook();
+</script>
 <script>
 var TRAITEMENTS = [
   'Rééducation genou', 'Kiné dos', 'Rééducation sportive', 'Kiné respiratoire',
@@ -288,7 +293,9 @@ function renderTable() {
   var q = document.getElementById('fSearch').value.trim().toLowerCase();
   var fTraitement = document.getElementById('fTraitement').value;
   var fTherapeute = document.getElementById('fTherapeute').value;
+  var cur = KinoeAuth.current();
   var list = KinoeDB.dossiers().filter(function (d) {
+    if (cur && cur.role === 'kine' && d.therapeuteId !== cur.id) return false;
     if (fTraitement && d.traitement !== fTraitement) return false;
     if (fTherapeute && d.therapeuteId !== fTherapeute) return false;
     if (q && d.patient && d.patient.nom.toLowerCase().indexOf(q) === -1) return false;
@@ -317,6 +324,8 @@ function renderTable() {
 }
 
 function fillSelects() {
+  var cur = KinoeAuth.current();
+  var isKine = cur && cur.role === 'kine';
   var ft = document.getElementById('fTraitement');
   TRAITEMENTS.forEach(function (t) {
     var o = document.createElement('option'); o.value = t; o.textContent = t; ft.appendChild(o);
@@ -330,10 +339,13 @@ function fillSelects() {
   var sth = document.getElementById('dsTherapeute');
   KinoeDB.employes().forEach(function (e) {
     if (e.role === 'Kinésithérapeute') {
+      if (isKine && e.id !== cur.id) return;
       var o1 = document.createElement('option'); o1.value = e.id; o1.textContent = e.nom; fth.appendChild(o1);
       var o2 = document.createElement('option'); o2.value = e.id; o2.textContent = e.nom; sth.appendChild(o2);
     }
   });
+  if (isKine && sth.options.length) { sth.value = cur.id; sth.disabled = true; }
+  else sth.disabled = false;
 }
 
 function openEdit(patientId) {

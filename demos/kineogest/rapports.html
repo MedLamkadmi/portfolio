@@ -238,7 +238,7 @@ var ROLE = KinoeAuth.ROLE_LABEL[KinoeAuth.current().role];
   document.getElementById('kpPat').textContent = KinoeDB.patients().length;
   document.getElementById('kpRdv').textContent = rdvs.filter(function (r) { return r.date.indexOf('/09/2026') !== -1; }).length;
   document.getElementById('kpOcc').textContent = occMoy + '%';
-  document.getElementById('kpCroiss').textContent = (croiss >= 0 ? '+' : '') + croiss + '%';
+  document.getElementById('kpCroiss').textContent = (croiss > 0 ? '+' : '') + croiss + '%';
   document.getElementById('kpRetard').textContent = KinoeDB.factures().filter(function (f) { return f.statut === 'En retard'; }).length;
 
   /* --- Charts --- */

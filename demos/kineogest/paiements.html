@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paiements — KinéoGest</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--sidebar-bg:#1e1e2f;--sidebar-hover:#2a2a40;--sidebar-active:#3b3b5c;--sidebar-section:rgba(255,255,255,.4);--sidebar-link:rgba(255,255,255,.6);--accent:#0f766e;--accent-light:#ccfbf1}
+html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
+#sidebar{position:fixed;top:0;left:0;width:260px;height:100vh;background:var(--sidebar-bg);z-index:1000;display:flex;flex-direction:column;transition:transform .3s;overflow-y:auto;overflow-x:hidden}
+#sidebar::-webkit-scrollbar{width:4px}#sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px}
+.sidebar-brand{padding:24px 20px 18px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:12px}
+.sidebar-brand .brand-icon{width:38px;height:38px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#fff}
+.sidebar-brand .brand-text h5{margin:0;font-size:16px;font-weight:700;color:#fff;line-height:1.2}
+.sidebar-brand .brand-text small{font-size:11px;color:var(--sidebar-section);font-weight:400}
+.sidebar-menu{list-style:none;padding:10px 0;margin:0;flex:1}
+.sidebar-menu .menu-label{padding:16px 20px 6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--sidebar-section)}
+.sidebar-menu li a,.sidebar-menu li .menu-link{display:flex;align-items:center;gap:12px;padding:10px 20px;font-size:13.5px;font-weight:500;color:var(--sidebar-link);text-decoration:none;transition:background .15s,color .15s;cursor:pointer;border:none;background:none;width:100%;text-align:left}
+.sidebar-menu li a:hover,.sidebar-menu li .menu-link:hover{background:var(--sidebar-hover);color:#fff}
+.sidebar-menu li a.active,.sidebar-menu li .menu-link.active{background:var(--sidebar-active);color:#fff}
+.sidebar-menu li a .bi,.sidebar-menu li .menu-link .bi{font-size:18px;width:22px;text-align:center;flex-shrink:0}
+.sidebar-menu .sub-menu{list-style:none;padding:0;margin:0;max-height:0;overflow:hidden;transition:max-height .3s;background:rgba(0,0,0,.12)}
+.sidebar-menu .sub-menu.show{max-height:600px}
+.sidebar-menu .sub-menu li a{padding:8px 20px 8px 54px;font-size:13px}
+.sidebar-menu .menu-link .arrow{margin-left:auto;transition:transform .25s;font-size:12px}
+.sidebar-menu .menu-link[aria-expanded="true"] .arrow{transform:rotate(90deg)}
+.sidebar-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,.06);font-size:11px;color:var(--sidebar-section)}
+.sidebar-upgrade{margin:0 14px 14px;background:rgba(15,118,110,.15);border-radius:10px;padding:12px;font-size:12px;color:var(--accent-light)}
+.sidebar-upgrade b{display:block;margin-bottom:4px;color:#fff;font-size:13px}
+#content{margin-left:260px;min-height:100vh;background:#f4f6f9}
+.topbar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #e9ecef;padding:0 24px;height:56px;display:flex;align-items:center;gap:14px}
+.topbar .search{flex:1;background:#f4f6f9;border:1px solid #e9ecef;border-radius:8px;padding:9px 14px;font-size:13px;max-width:420px;color:#636e72}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.topbar .avatar{width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px}
+.hamburger{display:none;background:none;border:none;font-size:22px;cursor:pointer;color:#333}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin:20px 0 14px;flex-wrap:wrap;gap:10px}
+.page-header h1{font-size:22px;font-weight:700;margin:0}
+.page-header small{color:#636e72;font-size:13px}
+.card-panel{border:none;border-radius:10px;box-shadow:0 1px 3px rgba(15,23,42,.08);overflow:hidden}
+.card-panel .panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e9ecef}
+.card-panel .panel-head h6{margin:0;font-size:14px;font-weight:700}
+.card-panel .panel-head a{font-size:12px;color:var(--accent);text-decoration:none;font-weight:600}
+.card-panel table th{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#636e72;background:#f8fafc;border-bottom:1px solid #e9ecef;padding:10px 14px;font-weight:600}
+.card-panel table td{padding:11px 14px;font-size:13px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.card-panel table tr:last-child td{border-bottom:none}
+.badge-status{font-size:11px;font-weight:600;border-radius:20px;padding:4px 10px}
+.badge-ok{background:#dcfce7;color:#16a34a}
+.badge-warn{background:#fef3c7;color:#d97706}
+.badge-sms{background:#e0f2fe;color:#0369a1}
+.badge-gray{background:#f1f5f9;color:#64748b}
+.badge-rh{background:#ede9fe;color:#7c3aed}
+.badge-danger{background:#fee2e2;color:#dc2626}
+.emp-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-right:8px;vertical-align:middle}
+.demo-notice{background:#fef3c7;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:10px 16px;font-size:13px;display:flex;align-items:center;gap:10px}
+.main-footer{padding:18px 24px;border-top:1px solid #e9ecef;font-size:12px;color:#636e72;text-align:center}
+@media(max-width:992px){#sidebar{transform:translateX(-100%)}#sidebar.show{transform:translateX(0)}#content{margin-left:0}.hamburger{display:block}}
+</style>
+</head>
+<body>
+<aside id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">K</div>
+    <div class="brand-text"><h5>KinéoGest</h5><small>Cabinet de kinésithérapie</small></div>
+  </div>
+  <ul class="sidebar-menu">
+    <li class="menu-label">Menu</li>
+    <li><a href="index.html" class="menu-link"><i class="bi bi-grid-1x2-fill"></i> Tableau de bord</a></li>
+    <li class="menu-label">Gestion</li>
+    <li>
+      <button class="menu-link" data-bs-toggle="collapse" data-bs-target="#sub-planning" aria-expanded="false"><i class="bi bi-calendar2-week"></i> Planning <i class="bi bi-chevron-right arrow"></i></button>
+      <ul class="sub-menu collapse" id="sub-planning">
+        <li><a href="rendez-vous.html"><i class="bi bi-calendar-check"></i> Rendez-vous</a></li>
+        <li><a href="emploi-du-temps.html"><i class="bi bi-calendar-range"></i> Emploi du temps</a></li>
+        <li><a href="rappels-sms.html"><i class="bi bi-bell"></i> Rappels SMS</a></li>
+      </ul>
+    </li>
+    <li>
+      <button class="menu-link" data-bs-toggle="collapse" data-bs-target="#sub-patients" aria-expanded="false"><i class="bi bi-people"></i> Patients <i class="bi bi-chevron-right arrow"></i></button>
+      <ul class="sub-menu collapse" id="sub-patients">
+        <li><a href="nouveau-patient.html"><i class="bi bi-person-plus"></i> Nouveau patient</a></li>
+        <li><a href="dossiers-medicaux.html"><i class="bi bi-journal-text"></i> Dossiers médicaux</a></li>
+        <li><a href="rechercher.html"><i class="bi bi-search"></i> Rechercher</a></li>
+      </ul>
+    </li>
+    <li><a href="employes.html" class="menu-link"><i class="bi bi-person-gear"></i> Employés</a></li>
+    <li><a href="documents.html" class="menu-link"><i class="bi bi-folder2-open"></i> Documents</a></li>
+    <li class="menu-label">Administration</li>
+    <li>
+      <button class="menu-link" data-bs-toggle="collapse" data-bs-target="#sub-facturation" aria-expanded="true"><i class="bi bi-cash-stack"></i> Facturation <i class="bi bi-chevron-right arrow"></i></button>
+      <ul class="sub-menu collapse show" id="sub-facturation">
+        <li><a href="factures.html"><i class="bi bi-receipt"></i> Factures</a></li>
+        <li><a href="paiements.html" class="active"><i class="bi bi-credit-card"></i> Paiements</a></li>
+        <li><a href="rapports.html"><i class="bi bi-graph-up-arrow"></i> Rapports</a></li>
+      </ul>
+    </li>
+    <li><a href="rapports.html" class="menu-link"><i class="bi bi-bar-chart-line"></i> Rapports</a></li>
+    <li><a href="parametres.html" class="menu-link"><i class="bi bi-gear"></i> Paramètres</a></li>
+    <li class="menu-label">Info</li>
+    <li><a href="../index.html" class="menu-link"><i class="bi bi-arrow-left-circle"></i> Retour Portfolio</a></li>
+  </ul>
+  <div class="sidebar-upgrade"><b><i class="bi bi-info-circle"></i> Démo interactive</b>Chaque rubrique liste vos données réelles. Personnalisable.</div>
+  <div class="sidebar-footer">© 2026 KinéoGest</div>
+</aside>
+
+<div id="content">
+  <header class="topbar">
+    <button class="hamburger d-lg-none" onclick="document.getElementById('sidebar').classList.toggle('show')">☰</button>
+    <input type="text" class="search" placeholder="🔍 Rechercher un patient, un rendez-vous, un document…" readonly>
+    <div class="right">
+      <a href="#" class="text-decoration-none" style="font-size:20px;color:#636e72"><i class="bi bi-bell"></i></a>
+      <a href="#" class="text-decoration-none" style="font-size:20px;color:#636e72"><i class="bi bi-envelope"></i></a>
+      <div class="avatar">RK</div>
+    </div>
+  </header>
+
+  <div class="container-fluid px-4">
+    <div class="page-header">
+      <div>
+        <h1>Paiements</h1>
+        <small>Historique de tous les paiements reçus</small>
+      </div>
+    </div>
+
+    <div class="demo-notice mb-3"><i class="bi bi-info-circle"></i> Ceci est une maquette de démonstration. Les données présentées sont entièrement fictives.</div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-sm-6 col-xl-3">
+        <div class="card card-panel">
+          <div class="card-body p-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="emp-avatar" style="width:40px;height:40px;font-size:16px;background:#dcfce7;color:#16a34a"><i class="bi bi-cash-stack"></i></div>
+              <div>
+                <div class="text-muted" style="font-size:12px">Total reçu</div>
+                <div style="font-size:20px;font-weight:700">124 500 MAD</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-3">
+        <div class="card card-panel">
+          <div class="card-body p-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="emp-avatar" style="width:40px;height:40px;font-size:16px"><i class="bi bi-calendar-month"></i></div>
+              <div>
+                <div class="text-muted" style="font-size:12px">Ce mois</div>
+                <div style="font-size:20px;font-weight:700">84 500 MAD</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-3">
+        <div class="card card-panel">
+          <div class="card-body p-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="emp-avatar" style="width:40px;height:40px;font-size:16px;background:#fef3c7;color:#d97706"><i class="bi bi-hourglass-split"></i></div>
+              <div>
+                <div class="text-muted" style="font-size:12px">En attente</div>
+                <div style="font-size:20px;font-weight:700">18 200 MAD</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-3">
+        <div class="card card-panel">
+          <div class="card-body p-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="emp-avatar" style="width:40px;height:40px;font-size:16px;background:#ede9fe;color:#7c3aed"><i class="bi bi-arrow-counterclockwise"></i></div>
+              <div>
+                <div class="text-muted" style="font-size:12px">Remboursé</div>
+                <div style="font-size:20px;font-weight:700">2 100 MAD</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-panel mb-3">
+      <div class="card-body py-3 px-4">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label" style="font-size:12px;font-weight:600">Date début</label>
+            <input type="date" class="form-control form-control-sm" value="2026-08-25">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label" style="font-size:12px;font-weight:600">Date fin</label>
+            <input type="date" class="form-control form-control-sm" value="2026-09-05">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label" style="font-size:12px;font-weight:600">Méthode de paiement</label>
+            <select class="form-select form-select-sm">
+              <option selected>Toutes</option>
+              <option>Espèces</option>
+              <option>Carte bancaire</option>
+              <option>Virement</option>
+              <option>Chèque</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <button class="btn btn-sm w-100" style="background:var(--accent);color:#fff;border-color:var(--accent)"><i class="bi bi-funnel me-1"></i> Filtrer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-panel mb-4">
+      <div class="panel-head">
+        <h6>Historique des paiements</h6>
+        <a href="#">Exporter <i class="bi bi-download ms-1"></i></a>
+      </div>
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>N° Paiement</th>
+              <th>Patient</th>
+              <th>Montant</th>
+              <th>Méthode</th>
+              <th>Date</th>
+              <th>Référence</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>PAY-001</strong></td>
+              <td><span class="emp-avatar">KA</span> Kenza Alaoui</td>
+              <td>450 MAD</td>
+              <td>Espèces</td>
+              <td>05/09/2026</td>
+              <td>—</td>
+              <td><span class="badge-status badge-ok">Reçu</span></td>
+            </tr>
+            <tr>
+              <td><strong>PAY-002</strong></td>
+              <td><span class="emp-avatar">OH</span> Omar Haddad</td>
+              <td>380 MAD</td>
+              <td>Carte bancaire</td>
+              <td>04/09/2026</td>
+              <td>CB-7842</td>
+              <td><span class="badge-status badge-ok">Reçu</span></td>
+            </tr>
+            <tr>
+              <td><strong>PAY-003</strong></td>
+              <td><span class="emp-avatar">YT</span> Yasmine Tazi</td>
+              <td>260 MAD</td>
+              <td>Chèque</td>
+              <td>03/09/2026</td>
+              <td>CH-1593</td>
+              <td><span class="badge-status badge-warn">En attente</span></td>
+            </tr>
+            <tr>
+              <td><strong>PAY-004</strong></td>
+              <td><span class="emp-avatar">MC</span> Mehdi Chraibi</td>
+              <td>600 MAD</td>
+              <td>Virement</td>
+              <td>02/09/2026</td>
+              <td>VIR-4821</td>
+              <td><span class="badge-status badge-ok">Reçu</span></td>
+            </tr>
+            <tr>
+              <td><strong>PAY-005</strong></td>
+              <td><span class="emp-avatar">IZ</span> Ilham Ziani</td>
+              <td>350 MAD</td>
+              <td>Espèces</td>
+              <td>01/09/2026</td>
+              <td>—</td>
+              <td><span class="badge-status badge-ok">Reçu</span></td>
+            </tr>
+            <tr>
+              <td><strong>PAY-006</strong></td>
+              <td><span class="emp-avatar">NF</span> Nabil Fassi</td>
+              <td>240 MAD</td>
+              <td>Carte bancaire</td>
+              <td>01/09/2026</td>
+              <td>CB-7855</td>
+              <td><span class="badge-status badge-rh">Remboursé</span></td>
+            </tr>
+            <tr>
+              <td><strong>PAY-007</strong></td>
+              <td><span class="emp-avatar">FZ</span> Fatima Zahra</td>
+              <td>290 MAD</td>
+              <td>Espèces</td>
+              <td>30/08/2026</td>
+              <td>—</td>
+              <td><span class="badge-status badge-ok">Reçu</span></td>
+            </tr>
+            <tr>
+              <td><strong>PAY-008</strong></td>
+              <td><span class="emp-avatar">AB</span> Ahmed Bennani</td>
+              <td>500 MAD</td>
+              <td>Virement</td>
+              <td>28/08/2026</td>
+              <td>VIR-4830</td>
+              <td><span class="badge-status badge-ok">Reçu</span></td>
+            </tr>
+            <tr>
+              <td><strong>PAY-009</strong></td>
+              <td><span class="emp-avatar">LI</span> Leila Idrissi</td>
+              <td>420 MAD</td>
+              <td>Carte bancaire</td>
+              <td>27/08/2026</td>
+              <td>CB-7861</td>
+              <td><span class="badge-status badge-ok">Reçu</span></td>
+            </tr>
+            <tr>
+              <td><strong>PAY-010</strong></td>
+              <td><span class="emp-avatar">YA</span> Youssra Amrani</td>
+              <td>190 MAD</td>
+              <td>Espèces</td>
+              <td>25/08/2026</td>
+              <td>—</td>
+              <td><span class="badge-status badge-warn">En attente</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer class="main-footer">KinéoGest — maquette de démonstration · Toutes les données affichées sont fictives</footer>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

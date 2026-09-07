@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Documents — KinéoGest</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+:root{--sidebar-bg:#1e1e2f;--sidebar-hover:#2a2a40;--sidebar-active:#3b3b5c;--sidebar-section:rgba(255,255,255,.4);--sidebar-link:rgba(255,255,255,.6);--accent:#0f766e;--accent-light:#ccfbf1}
+html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
+#sidebar{position:fixed;top:0;left:0;width:260px;height:100vh;background:var(--sidebar-bg);z-index:1000;display:flex;flex-direction:column;transition:transform .3s;overflow-y:auto;overflow-x:hidden}
+#sidebar::-webkit-scrollbar{width:4px}#sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px}
+.sidebar-brand{padding:24px 20px 18px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:12px}
+.sidebar-brand .brand-icon{width:38px;height:38px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#fff}
+.sidebar-brand .brand-text h5{margin:0;font-size:16px;font-weight:700;color:#fff;line-height:1.2}
+.sidebar-brand .brand-text small{font-size:11px;color:var(--sidebar-section);font-weight:400}
+.sidebar-menu{list-style:none;padding:10px 0;margin:0;flex:1}
+.sidebar-menu .menu-label{padding:16px 20px 6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--sidebar-section)}
+.sidebar-menu li a,.sidebar-menu li .menu-link{display:flex;align-items:center;gap:12px;padding:10px 20px;font-size:13.5px;font-weight:500;color:var(--sidebar-link);text-decoration:none;transition:background .15s,color .15s;cursor:pointer;border:none;background:none;width:100%;text-align:left}
+.sidebar-menu li a:hover,.sidebar-menu li .menu-link:hover{background:var(--sidebar-hover);color:#fff}
+.sidebar-menu li a.active,.sidebar-menu li .menu-link.active{background:var(--sidebar-active);color:#fff}
+.sidebar-menu li a .bi,.sidebar-menu li .menu-link .bi{font-size:18px;width:22px;text-align:center;flex-shrink:0}
+.sidebar-menu .sub-menu{list-style:none;padding:0;margin:0;max-height:0;overflow:hidden;transition:max-height .3s;background:rgba(0,0,0,.12)}
+.sidebar-menu .sub-menu.show{max-height:600px}
+.sidebar-menu .sub-menu li a{padding:8px 20px 8px 54px;font-size:13px}
+.sidebar-menu .menu-link .arrow{margin-left:auto;transition:transform .25s;font-size:12px}
+.sidebar-menu .menu-link[aria-expanded="true"] .arrow{transform:rotate(90deg)}
+.sidebar-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,.06);font-size:11px;color:var(--sidebar-section)}
+.sidebar-upgrade{margin:0 14px 14px;background:rgba(15,118,110,.15);border-radius:10px;padding:12px;font-size:12px;color:var(--accent-light)}
+.sidebar-upgrade b{display:block;margin-bottom:4px;color:#fff;font-size:13px}
+#content{margin-left:260px;min-height:100vh;background:#f4f6f9}
+.topbar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #e9ecef;padding:0 24px;height:56px;display:flex;align-items:center;gap:14px}
+.topbar .search{flex:1;background:#f4f6f9;border:1px solid #e9ecef;border-radius:8px;padding:9px 14px;font-size:13px;max-width:420px;color:#636e72}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.topbar .avatar{width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px}
+.hamburger{display:none;background:none;border:none;font-size:22px;cursor:pointer;color:#333}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin:20px 0 14px;flex-wrap:wrap;gap:10px}
+.page-header h1{font-size:22px;font-weight:700;margin:0}
+.page-header small{color:#636e72;font-size:13px}
+.card-panel{border:none;border-radius:10px;box-shadow:0 1px 3px rgba(15,23,42,.08);overflow:hidden}
+.card-panel .panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e9ecef}
+.card-panel .panel-head h6{margin:0;font-size:14px;font-weight:700}
+.card-panel .panel-head a{font-size:12px;color:var(--accent);text-decoration:none;font-weight:600}
+.card-panel table th{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#636e72;background:#f8fafc;border-bottom:1px solid #e9ecef;padding:10px 14px;font-weight:600}
+.card-panel table td{padding:11px 14px;font-size:13px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.card-panel table tr:last-child td{border-bottom:none}
+.badge-status{font-size:11px;font-weight:600;border-radius:20px;padding:4px 10px}
+.badge-ok{background:#dcfce7;color:#16a34a}
+.badge-warn{background:#fef3c7;color:#d97706}
+.badge-sms{background:#e0f2fe;color:#0369a1}
+.badge-gray{background:#f1f5f9;color:#64748b}
+.badge-rh{background:#ede9fe;color:#7c3aed}
+.badge-danger{background:#fee2e2;color:#dc2626}
+.emp-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-right:8px;vertical-align:middle}
+.demo-notice{background:#fef3c7;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:10px 16px;font-size:13px;display:flex;align-items:center;gap:10px}
+.main-footer{padding:18px 24px;border-top:1px solid #e9ecef;font-size:12px;color:#636e72;text-align:center}
+@media(max-width:992px){#sidebar{transform:translateX(-100%)}#sidebar.show{transform:translateX(0)}#content{margin-left:0}.hamburger{display:block}}
+</style>
+</head>
+<body>
+
+<aside id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">K</div>
+    <div class="brand-text"><h5>KinéoGest</h5><small>Cabinet de kinésithérapie</small></div>
+  </div>
+  <ul class="sidebar-menu">
+    <li class="menu-label">Menu</li>
+    <li><a href="index.html" class="menu-link"><i class="bi bi-grid-1x2-fill"></i> Tableau de bord</a></li>
+    <li class="menu-label">Gestion</li>
+    <li>
+      <button class="menu-link" data-bs-toggle="collapse" data-bs-target="#sub-planning" aria-expanded="false"><i class="bi bi-calendar2-week"></i> Planning <i class="bi bi-chevron-right arrow"></i></button>
+      <ul class="sub-menu collapse" id="sub-planning">
+        <li><a href="rendez-vous.html"><i class="bi bi-calendar-check"></i> Rendez-vous</a></li>
+        <li><a href="emploi-du-temps.html"><i class="bi bi-calendar-range"></i> Emploi du temps</a></li>
+        <li><a href="rappels-sms.html"><i class="bi bi-bell"></i> Rappels SMS</a></li>
+      </ul>
+    </li>
+    <li>
+      <button class="menu-link" data-bs-toggle="collapse" data-bs-target="#sub-patients" aria-expanded="false"><i class="bi bi-people"></i> Patients <i class="bi bi-chevron-right arrow"></i></button>
+      <ul class="sub-menu collapse" id="sub-patients">
+        <li><a href="nouveau-patient.html"><i class="bi bi-person-plus"></i> Nouveau patient</a></li>
+        <li><a href="dossiers-medicaux.html"><i class="bi bi-journal-text"></i> Dossiers médicaux</a></li>
+        <li><a href="rechercher.html"><i class="bi bi-search"></i> Rechercher</a></li>
+      </ul>
+    </li>
+    <li><a href="employes.html" class="menu-link"><i class="bi bi-person-gear"></i> Employés</a></li>
+    <li><a href="documents.html" class="menu-link active"><i class="bi bi-folder2-open"></i> Documents</a></li>
+    <li class="menu-label">Administration</li>
+    <li>
+      <button class="menu-link" data-bs-toggle="collapse" data-bs-target="#sub-facturation" aria-expanded="false"><i class="bi bi-cash-stack"></i> Facturation <i class="bi bi-chevron-right arrow"></i></button>
+      <ul class="sub-menu collapse" id="sub-facturation">
+        <li><a href="factures.html"><i class="bi bi-receipt"></i> Factures</a></li>
+        <li><a href="paiements.html"><i class="bi bi-credit-card"></i> Paiements</a></li>
+        <li><a href="rapports.html"><i class="bi bi-graph-up-arrow"></i> Rapports</a></li>
+      </ul>
+    </li>
+    <li><a href="rapports.html" class="menu-link"><i class="bi bi-bar-chart-line"></i> Rapports</a></li>
+    <li><a href="parametres.html" class="menu-link"><i class="bi bi-gear"></i> Paramètres</a></li>
+    <li class="menu-label">Info</li>
+    <li><a href="../index.html" class="menu-link"><i class="bi bi-arrow-left-circle"></i> Retour Portfolio</a></li>
+  </ul>
+  <div class="sidebar-upgrade"><b><i class="bi bi-info-circle"></i> Démo interactive</b>Chaque rubrique liste vos données réelles. Personnalisable.</div>
+  <div class="sidebar-footer">© 2026 KinéoGest</div>
+</aside>
+
+<div id="content">
+  <header class="topbar">
+    <button class="hamburger d-lg-none" onclick="document.getElementById('sidebar').classList.toggle('show')">☰</button>
+    <input type="text" class="search" placeholder="🔍 Rechercher un patient, un rendez-vous, un document…" readonly>
+    <div class="right">
+      <a href="#" class="text-decoration-none" style="font-size:20px;color:#636e72"><i class="bi bi-bell"></i></a>
+      <a href="#" class="text-decoration-none" style="font-size:20px;color:#636e72"><i class="bi bi-envelope"></i></a>
+      <div class="avatar">RK</div>
+    </div>
+  </header>
+
+  <div class="container-fluid px-4">
+    <div class="page-header">
+      <div>
+        <h1>Documents</h1>
+        <small>Gestion de tous les documents du cabinet</small>
+      </div>
+      <button class="btn" style="background:var(--accent);color:#fff;font-weight:600;font-size:13px">
+        <i class="bi bi-plus-lg me-1"></i> Nouveau document
+      </button>
+    </div>
+
+    <div class="demo-notice mb-3">
+      <i class="bi bi-info-circle-fill"></i>
+      <span><b>Mode démo</b> — Ces données sont fictives. Dans la version finale, elles seront issues de votre coffre-fort numérique.</span>
+    </div>
+
+    <!-- Filters -->
+    <div class="row g-3 mb-3">
+      <div class="col-md-3">
+        <select class="form-select" style="font-size:13px">
+          <option selected>Tous les types</option>
+          <option>Ordonnance</option>
+          <option>Imagerie</option>
+          <option>RH</option>
+          <option>Bilan</option>
+          <option>Contrat</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <input type="date" class="form-control" style="font-size:13px" value="2026-08-01">
+      </div>
+      <div class="col-md-3">
+        <input type="date" class="form-control" style="font-size:13px" value="2026-09-07">
+      </div>
+      <div class="col-md-3">
+        <div class="input-group">
+          <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+          <input type="text" class="form-control" placeholder="Rechercher un document…" style="font-size:13px">
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card-panel">
+      <div class="panel-head">
+        <h6><i class="bi bi-folder2-open me-2"></i>Documents du cabinet</h6>
+        <a href="#">Exporter la liste</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Document</th>
+              <th>Patient / Employé</th>
+              <th>Type</th>
+              <th>Date</th>
+              <th>Taille</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><i class="bi bi-file-earmark-text me-2" style="color:#dc2626"></i>Ordonnance — rééducation genou</td>
+              <td><span class="emp-avatar">KA</span> Kenza Alaoui</td>
+              <td><span class="badge-status badge-sms">Prescription</span></td>
+              <td>05/09/2026</td>
+              <td>245 Ko</td>
+              <td>
+                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
+                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
+                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
+              </td>
+            </tr>
+            <tr>
+              <td><i class="bi bi-file-earmark-image me-2" style="color:#0369a1"></i>Radiographie RX genou (D)</td>
+              <td><span class="emp-avatar">KA</span> Kenza Alaoui</td>
+              <td><span class="badge-status badge-gray">Imagerie</span></td>
+              <td>05/09/2026</td>
+              <td>1.2 Mo</td>
+              <td>
+                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
+                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
+                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
+              </td>
+            </tr>
+            <tr>
+              <td><i class="bi bi-file-earmark-person me-2" style="color:#7c3aed"></i>Contrat de travail — Amine Kadiri</td>
+              <td><span class="emp-avatar">AK</span> Amine Kadiri</td>
+              <td><span class="badge-status badge-rh">RH</span></td>
+              <td>01/09/2026</td>
+              <td>520 Ko</td>
+              <td>
+                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
+                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
+                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
+              </td>
+            </tr>
+            <tr>
+              <td><i class="bi bi-file-earmark-text me-2" style="color:#16a34a"></i>Compte rendu — bilan S1</td>
+              <td><span class="emp-avatar">OH</span> Omar Haddad</td>
+              <td><span class="badge-status badge-ok">Bilan</span></td>
+              <td>02/09/2026</td>
+              <td>180 Ko</td>
+              <td>
+                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
+                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
+                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
+              </td>
+            </tr>
+            <tr>
+              <td><i class="bi bi-file-earmark-person me-2" style="color:#7c3aed"></i>Attestation employé — Nadia Fikri</td>
+              <td><span class="emp-avatar">NF</span> Nadia Fikri</td>
+              <td><span class="badge-status badge-rh">RH</span></td>
+              <td>28/08/2026</td>
+              <td>120 Ko</td>
+              <td>
+                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
+                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
+                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
+              </td>
+            </tr>
+            <tr>
+              <td><i class="bi bi-file-earmark-image me-2" style="color:#0369a1"></i>IRM lombaire</td>
+              <td><span class="emp-avatar">MC</span> Mehdi Chraibi</td>
+              <td><span class="badge-status badge-gray">Imagerie</span></td>
+              <td>03/09/2026</td>
+              <td>2.1 Mo</td>
+              <td>
+                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
+                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
+                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
+              </td>
+            </tr>
+            <tr>
+              <td><i class="bi bi-file-earmark-text me-2" style="color:#dc2626"></i>Ordonnance — kiné respiratoire</td>
+              <td><span class="emp-avatar">IZ</span> Ilham Ziani</td>
+              <td><span class="badge-status badge-sms">Prescription</span></td>
+              <td>04/09/2026</td>
+              <td>195 Ko</td>
+              <td>
+                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
+                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
+                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
+              </td>
+            </tr>
+            <tr>
+              <td><i class="bi bi-file-earmark-person me-2" style="color:#7c3aed"></i>Contrat de travail — Salma Lahlou</td>
+              <td><span class="emp-avatar">SL</span> Salma Lahlou</td>
+              <td><span class="badge-status badge-rh">RH</span></td>
+              <td>15/06/2025</td>
+              <td>510 Ko</td>
+              <td>
+                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
+                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
+                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
+              </td>
+            </tr>
+            <tr>
+              <td><i class="bi bi-file-earmark-text me-2" style="color:#16a34a"></i>Bilan de suivi — mois d'août</td>
+              <td><span class="emp-avatar">NF</span> Nabil Fassi</td>
+              <td><span class="badge-status badge-ok">Bilan</span></td>
+              <td>01/09/2026</td>
+              <td>320 Ko</td>
+              <td>
+                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
+                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
+                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
+              </td>
+            </tr>
+            <tr>
+              <td><i class="bi bi-file-earmark-image me-2" style="color:#0369a1"></i>Radio épaule (G)</td>
+              <td><span class="emp-avatar">NF</span> Nabil Fassi</td>
+              <td><span class="badge-status badge-gray">Imagerie</span></td>
+              <td>03/09/2026</td>
+              <td>1.8 Mo</td>
+              <td>
+                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
+                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
+                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
+              </td>
+            </tr>
+            <tr>
+              <td><i class="bi bi-file-earmark-text me-2" style="color:#dc2626"></i>Certificat médical</td>
+              <td><span class="emp-avatar">FZ</span> Fatima Zahra</td>
+              <td><span class="badge-status badge-sms">Prescription</span></td>
+              <td>06/09/2026</td>
+              <td>150 Ko</td>
+              <td>
+                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
+                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
+                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
+              </td>
+            </tr>
+            <tr>
+              <td><i class="bi bi-file-earmark-person me-2" style="color:#7c3aed"></i>Fiche de paie — août 2026</td>
+              <td><span class="emp-avatar">RB</span> Rachid Bensaid</td>
+              <td><span class="badge-status badge-rh">RH</span></td>
+              <td>01/09/2026</td>
+              <td>280 Ko</td>
+              <td>
+                <a href="#" class="text-decoration-none me-2" style="color:var(--accent)"><i class="bi bi-eye"></i></a>
+                <a href="#" class="text-decoration-none me-2" style="color:#636e72"><i class="bi bi-download"></i></a>
+                <a href="#" class="text-decoration-none" style="color:#dc2626"><i class="bi bi-trash3"></i></a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="main-footer">
+      © 2026 KinéoGest — Application de démonstration. Données 100% fictives.
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

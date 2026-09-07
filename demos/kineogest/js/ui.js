@@ -71,6 +71,12 @@
       if (s === "Poste vacant") return '<span class="badge-status badge-danger">Poste vacant</span>';
       return '<span class="badge-status badge-gray">' + s + '</span>';
     },
+    badgeSms: function (s) {
+      if (s === "Livré") return '<span class="badge-status badge-ok">Livré</span>';
+      if (s === "En attente") return '<span class="badge-status badge-warn">En attente</span>';
+      if (s === "Échoué") return '<span class="badge-status badge-danger">Échoué</span>';
+      return '<span class="badge-status badge-gray">' + s + '</span>';
+    },
 
     /* --- Couleur de fond selon spécialité --- */
     badgeSpecialite: function (s) {

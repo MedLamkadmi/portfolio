@@ -6,7 +6,6 @@
 <title>Rappels SMS — KinéoGest</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 :root{--sidebar-bg:#1e1e2f;--sidebar-hover:#2a2a40;--sidebar-active:#3b3b5c;--sidebar-section:rgba(255,255,255,.4);--sidebar-link:rgba(255,255,255,.6);--accent:#0f766e;--accent-light:#ccfbf1}
@@ -54,14 +53,16 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
 .badge-gray{background:#f1f5f9;color:#64748b}
 .badge-rh{background:#ede9fe;color:#7c3aed}
 .badge-danger{background:#fee2e2;color:#dc2626}
+.action-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 6px}
+.action-view{color:var(--accent)}.action-edit{color:#64748b}.action-del{color:#dc2626}
 .emp-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-right:8px;vertical-align:middle}
 .demo-notice{background:#fef3c7;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:10px 16px;font-size:13px;display:flex;align-items:center;gap:10px}
 .main-footer{padding:18px 24px;border-top:1px solid #e9ecef;font-size:12px;color:#636e72;text-align:center}
-@media(max-width:992px){#sidebar{transform:translateX(-100%)}#sidebar.show{transform:translateX(0)}#content{margin-left:0}.hamburger{display:block}}
 .stat-card{background:#fff;border:none;border-radius:10px;box-shadow:0 1px 3px rgba(15,23,42,.08);padding:18px 20px;display:flex;align-items:center;gap:14px}
 .stat-card .stat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
 .stat-card .stat-info h4{margin:0;font-size:22px;font-weight:700;line-height:1.2}
 .stat-card .stat-info small{color:#636e72;font-size:12px}
+@media(max-width:992px){#sidebar{transform:translateX(-100%)}#sidebar.show{transform:translateX(0)}#content{margin-left:0}.hamburger{display:block}}
 </style>
 </head>
 <body>
@@ -138,13 +139,13 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
     <div class="page-header">
       <div>
         <h1>Rappels SMS</h1>
-        <small>Historique des notifications automatiques</small>
+        <small>Historique des notifications automatiques — généré depuis les rendez-vous</small>
       </div>
     </div>
 
     <div class="demo-notice mb-3">
       <i class="bi bi-info-circle"></i>
-      Ceci est une maquette de démonstration. Les données affichées sont entièrement fictives.
+      Ceci est une maquette de démonstration. Les rappels sont générés automatiquement à partir de vos rendez-vous. Bouton <b>Réinitialiser</b> pour restaurer la démo.
     </div>
 
     <div class="row g-3 mb-4">
@@ -152,7 +153,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
         <div class="stat-card">
           <div class="stat-icon" style="background:#dcfce7;color:#16a34a"><i class="bi bi-chat-dots"></i></div>
           <div class="stat-info">
-            <h4>248</h4>
+            <h4 id="stTotal">…</h4>
             <small>Total envoyés</small>
           </div>
         </div>
@@ -161,8 +162,8 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
         <div class="stat-card">
           <div class="stat-icon" style="background:#e0f2fe;color:#0369a1"><i class="bi bi-calendar-today"></i></div>
           <div class="stat-info">
-            <h4>24</h4>
-            <small>Aujourd'hui</small>
+            <h4 id="stAujourdhui">…</h4>
+            <small>Envoyés aujourd'hui</small>
           </div>
         </div>
       </div>
@@ -170,7 +171,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
         <div class="stat-card">
           <div class="stat-icon" style="background:#dcfce7;color:#16a34a"><i class="bi bi-check-circle"></i></div>
           <div class="stat-info">
-            <h4>96%</h4>
+            <h4 id="stTaux">…</h4>
             <small>Taux de livraison</small>
           </div>
         </div>
@@ -179,7 +180,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
         <div class="stat-card">
           <div class="stat-icon" style="background:#fef3c7;color:#d97706"><i class="bi bi-hourglass-split"></i></div>
           <div class="stat-info">
-            <h4>3</h4>
+            <h4 id="stAttente">…</h4>
             <small>En attente</small>
           </div>
         </div>
@@ -189,21 +190,22 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
     <div class="card-panel mb-3">
       <div class="panel-head">
         <h6>Filtres</h6>
+        <a href="#" onclick="doReset();return false;" style="color:#dc2626"><i class="bi bi-arrow-counterclockwise me-1"></i>Réinitialiser</a>
       </div>
       <div class="p-3">
         <div class="row g-3">
           <div class="col-md-3 col-sm-6">
             <label class="form-label form-label-sm" style="font-size:12px;font-weight:600">Date début</label>
-            <input type="date" class="form-control form-control-sm" value="2026-09-01">
+            <input type="text" id="fDebut" class="form-control form-control-sm" placeholder="01/09/2026" oninput="renderTable()">
           </div>
           <div class="col-md-3 col-sm-6">
             <label class="form-label form-label-sm" style="font-size:12px;font-weight:600">Date fin</label>
-            <input type="date" class="form-control form-control-sm" value="2026-09-12">
+            <input type="text" id="fFin" class="form-control form-control-sm" placeholder="12/09/2026" oninput="renderTable()">
           </div>
           <div class="col-md-3 col-sm-6">
             <label class="form-label form-label-sm" style="font-size:12px;font-weight:600">Statut</label>
-            <select class="form-select form-select-sm">
-              <option selected>Tous</option>
+            <select id="fStatut" class="form-select form-select-sm" onchange="renderTable()">
+              <option value="">Tous</option>
               <option>Livré</option>
               <option>En attente</option>
               <option>Échoué</option>
@@ -211,7 +213,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
           </div>
           <div class="col-md-3 col-sm-6">
             <label class="form-label form-label-sm" style="font-size:12px;font-weight:600">Patient</label>
-            <input type="text" class="form-control form-control-sm" placeholder="Rechercher…">
+            <input type="text" id="fPatient" class="form-control form-control-sm" placeholder="Rechercher…" oninput="renderTable()">
           </div>
         </div>
       </div>
@@ -219,8 +221,8 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
 
     <div class="card-panel">
       <div class="panel-head">
-        <h6>Historique des SMS <span class="badge bg-secondary ms-2" style="font-size:11px">12</span></h6>
-        <a href="#">Exporter <i class="bi bi-download"></i></a>
+        <h6>Historique des SMS <span class="badge bg-secondary ms-2" style="font-size:11px" id="smsCount">0</span></h6>
+        <a href="#" onclick="exportCSV();return false;">Exporter <i class="bi bi-download"></i></a>
       </div>
       <div class="table-responsive">
         <table class="table table-hover mb-0">
@@ -231,108 +233,15 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
               <th>Téléphone</th>
               <th>Message</th>
               <th>Statut</th>
-              <th>Envoyé à</th>
+              <th style="width:110px">Envoyé à</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td><small class="text-muted">07/09/2026<br>09:15</small></td>
-              <td><span class="emp-avatar">KA</span>Kenza Alaoui</td>
-              <td>06 61 23 45 67</td>
-              <td style="max-width:280px">Rappel: Vous avez un rendez-vous demain à 08h00 avec Dr. Rachid Bensaid — Rééducation du genou</td>
-              <td><span class="badge-status badge-ok">Livré</span></td>
-              <td><small class="text-muted">07/09 09:15</small></td>
-            </tr>
-            <tr>
-              <td><small class="text-muted">07/09/2026<br>09:15</small></td>
-              <td><span class="emp-avatar">OH</span>Omar Haddad</td>
-              <td>06 72 34 89 01</td>
-              <td style="max-width:280px">Rappel: Vous avez un rendez-vous demain à 08h30 avec Dr. Salma Lahlou — Kiné du dos</td>
-              <td><span class="badge-status badge-ok">Livré</span></td>
-              <td><small class="text-muted">07/09 09:15</small></td>
-            </tr>
-            <tr>
-              <td><small class="text-muted">07/09/2026<br>09:15</small></td>
-              <td><span class="emp-avatar">YT</span>Yasmine Tazi</td>
-              <td>06 63 45 12 78</td>
-              <td style="max-width:280px">Rappel: Vous avez un rendez-vous demain à 09h00 avec Dr. Amine Kadiri — Masso-thérapie</td>
-              <td><span class="badge-status badge-ok">Livré</span></td>
-              <td><small class="text-muted">07/09 09:15</small></td>
-            </tr>
-            <tr>
-              <td><small class="text-muted">07/09/2026<br>14:30</small></td>
-              <td><span class="emp-avatar">MC</span>Mehdi Chraibi</td>
-              <td>06 50 67 89 34</td>
-              <td style="max-width:280px">Rappel: Vous avez un rendez-vous demain à 10h00 avec Dr. Rachid Bensaid — Suivi post-opératoire</td>
-              <td><span class="badge-status badge-ok">Livré</span></td>
-              <td><small class="text-muted">07/09 14:30</small></td>
-            </tr>
-            <tr>
-              <td><small class="text-muted">07/09/2026<br>14:30</small></td>
-              <td><span class="emp-avatar">IZ</span>Ilham Ziani</td>
-              <td>06 71 89 01 56</td>
-              <td style="max-width:280px">Rappel: Vous avez un rendez-vous demain à 10h30 avec Dr. Salma Lahlou — Kiné respiratoire</td>
-              <td><span class="badge-status badge-danger">Échoué</span></td>
-              <td><small class="text-muted">07/09 14:30</small></td>
-            </tr>
-            <tr>
-              <td><small class="text-muted">08/09/2026<br>08:00</small></td>
-              <td><span class="emp-avatar">NF</span>Nabil Fassi</td>
-              <td>06 62 56 78 90</td>
-              <td style="max-width:280px">Rappel: Vous avez un rendez-vous demain à 11h00 avec Dr. Amine Kadiri — Rééducation épaule</td>
-              <td><span class="badge-status badge-ok">Livré</span></td>
-              <td><small class="text-muted">08/09 08:00</small></td>
-            </tr>
-            <tr>
-              <td><small class="text-muted">08/09/2026<br>08:00</small></td>
-              <td><span class="emp-avatar">FZ</span>Fatima Zahra</td>
-              <td>06 53 67 89 12</td>
-              <td style="max-width:280px">Rappel: Vous avez un rendez-vous demain à 14h00 avec Dr. Rachid Bensaid — Rééducation cheville</td>
-              <td><span class="badge-status badge-ok">Livré</span></td>
-              <td><small class="text-muted">08/09 08:00</small></td>
-            </tr>
-            <tr>
-              <td><small class="text-muted">08/09/2026<br>16:00</small></td>
-              <td><span class="emp-avatar">AB</span>Ahmed Bennani</td>
-              <td>06 68 90 12 34</td>
-              <td style="max-width:280px">Votre séance de kinésithérapie est prévue aujourd'hui à 09h30 — Kiné pédiatrique</td>
-              <td><span class="badge-status badge-ok">Livré</span></td>
-              <td><small class="text-muted">08/09 16:00</small></td>
-            </tr>
-            <tr>
-              <td><small class="text-muted">09/09/2026<br>07:45</small></td>
-              <td><span class="emp-avatar">LI</span>Leila Idrissi</td>
-              <td>06 74 12 56 78</td>
-              <td style="max-width:280px">Rappel: Vous avez un rendez-vous demain à 15h00 avec Dr. Amine Kadiri — Drainage lymphatique</td>
-              <td><span class="badge-status badge-warn">En attente</span></td>
-              <td><small class="text-muted">09/09 07:45</small></td>
-            </tr>
-            <tr>
-              <td><small class="text-muted">09/09/2026<br>07:45</small></td>
-              <td><span class="emp-avatar">YA</span>Youssra Amrani</td>
-              <td>06 65 78 90 23</td>
-              <td style="max-width:280px">Rappel: Vous avez un rendez-vous demain à 16h00 avec Dr. Rachid Bensaid — Rééducation main</td>
-              <td><span class="badge-status badge-ok">Livré</span></td>
-              <td><small class="text-muted">09/09 07:45</small></td>
-            </tr>
-            <tr>
-              <td><small class="text-muted">09/09/2026<br>12:00</small></td>
-              <td><span class="emp-avatar">KA</span>Kenza Alaoui</td>
-              <td>06 61 23 45 67</td>
-              <td style="max-width:280px">Votre séance de kinésithérapie est prévue aujourd'hui à 14h30 — Rééducation du genou</td>
-              <td><span class="badge-status badge-warn">En attente</span></td>
-              <td><small class="text-muted">09/09 12:00</small></td>
-            </tr>
-            <tr>
-              <td><small class="text-muted">10/09/2026<br>08:00</small></td>
-              <td><span class="emp-avatar">OH</span>Omar Haddad</td>
-              <td>06 72 34 89 01</td>
-              <td style="max-width:280px">Rappel: Vous avez un rendez-vous demain à 14h00 avec Dr. Salma Lahlou — Kiné du dos</td>
-              <td><span class="badge-status badge-danger">Échoué</span></td>
-              <td><small class="text-muted">10/09 08:00</small></td>
-            </tr>
-          </tbody>
+          <tbody id="smsBody"></tbody>
         </table>
+        <div id="smsEmpty" class="text-center py-5" style="display:none">
+          <i class="bi bi-inbox" style="font-size:34px;color:#cbd5e1"></i>
+          <div class="mt-2 text-muted">Aucun rappel ne correspond aux filtres.</div>
+        </div>
       </div>
     </div>
 
@@ -342,6 +251,129 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
   </div>
 </div>
 
+<!-- ===== TOAST ===== -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+  <div id="ktoast" class="toast align-items-center" role="status">
+    <div class="d-flex">
+      <div class="toast-body" id="ktoastBody"></div>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/db.js"></script>
+<script src="js/ui.js"></script>
+<script>
+var TEL = {
+  'P001': '06 61 23 45 67', 'P002': '06 72 34 89 01', 'P003': '06 63 45 12 78',
+  'P004': '06 50 67 89 34', 'P005': '06 71 89 01 56', 'P006': '06 62 56 78 90',
+  'P007': '06 53 67 89 12', 'P008': '06 68 90 12 34', 'P009': '06 74 12 56 78',
+  'P010': '06 65 78 90 23'
+};
+var OVERRIDES_KEY = 'kineogest_rappels_v1';
+
+function loadOverrides() {
+  try { return JSON.parse(localStorage.getItem(OVERRIDES_KEY)) || {}; } catch (e) { return {}; }
+}
+function saveOverrides(o) {
+  try { localStorage.setItem(OVERRIDES_KEY, JSON.stringify(o)); } catch (e) {}
+}
+function prevDay(dmy) {
+  var p = dmy.split('/');
+  var d = new Date(Number(p[2]), Number(p[1]) - 1, Number(p[0]));
+  d.setDate(d.getDate() - 1);
+  return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+}
+
+function buildRappels() {
+  var over = loadOverrides();
+  return KinoeDB.rendezvous().map(function (r) {
+    var statut = over[r.id] || (r.statut === 'En attente' ? 'En attente' : (r.statut === 'Annulé' ? 'Échoué' : 'Livré'));
+    var message = 'Rappel: Vous avez un rendez-vous demain à ' + r.heure + ' avec ' + (r.therapeute ? 'Dr. ' + r.therapeute.nom : 'votre thérapeute') + ' — ' + r.traitement;
+    return {
+      id: r.id, envoyee: prevDay(r.date) + ' à 09:15', patient: r.patient,
+      tel: TEL[r.patientId] || '—', message: message, statut: statut
+    };
+  }).sort(function (a, b) { return b.envoyee.localeCompare(a.envoyee); });
+}
+
+function renderStats() {
+  var all = buildRappels();
+  var total = all.length;
+  var livres = 0, attente = 0, aujourdhui = 0;
+  all.forEach(function (r) {
+    if (r.statut === 'Livré') livres++;
+    else if (r.statut === 'En attente') attente++;
+    if (r.envoyee.indexOf('07/09/2026') !== -1) aujourdhui++;
+  });
+  document.getElementById('stTotal').textContent = total;
+  document.getElementById('stAujourdhui').textContent = aujourdhui;
+  document.getElementById('stTaux').textContent = total ? Math.round(livres / total * 100) + '%' : '—';
+  document.getElementById('stAttente').textContent = attente;
+}
+
+function renderTable() {
+  var d1 = document.getElementById('fDebut').value.trim();
+  var d2 = document.getElementById('fFin').value.trim();
+  var fStatut = document.getElementById('fStatut').value;
+  var q = document.getElementById('fPatient').value.trim().toLowerCase();
+  var list = buildRappels().filter(function (r) {
+    if (d1 && r.envoyee.slice(0, 10) < d1) return false;
+    if (d2 && r.envoyee.slice(0, 10) > d2) return false;
+    if (fStatut && r.statut !== fStatut) return false;
+    if (q && r.patient && r.patient.nom.toLowerCase().indexOf(q) === -1) return false;
+    return true;
+  });
+  var body = document.getElementById('smsBody');
+  var empty = document.getElementById('smsEmpty');
+  document.getElementById('smsCount').textContent = list.length;
+  body.innerHTML = '';
+  empty.style.display = list.length ? 'none' : 'block';
+  list.forEach(function (r) {
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><small class="text-muted">' + r.envoyee + '</small></td>' +
+      '<td><span class="emp-avatar">' + (r.patient ? r.patient.initiales : '—') + '</span>' + (r.patient ? r.patient.nom : '—') + '</td>' +
+      '<td>' + r.tel + '</td>' +
+      '<td style="max-width:300px">' + r.message + '</td>' +
+      '<td>' + KinoeUI.badgeSms(r.statut) + '</td>' +
+      '<td>' + (r.statut === 'En attente'
+        ? '<button class="btn btn-sm btn-outline-success" onclick="sendSms(\'' + r.id + '\')"><i class="bi bi-send me-1"></i>Envoyer</button>'
+        : '<small class="text-muted">' + r.envoyee.slice(0, 5) + '</small>') + '</td>';
+    body.appendChild(tr);
+  });
+}
+
+function sendSms(id) {
+  var over = loadOverrides();
+  over[id] = 'Livré';
+  saveOverrides(over);
+  KinoeUI.toast('Rappel SMS envoyé.');
+  renderUI();
+}
+
+function exportCSV() {
+  var rows = buildRappels().map(function (r) {
+    return [r.patient ? r.patient.nom : '', r.tel, r.message, r.statut, r.envoyee];
+  });
+  KinoeUI.csvExport('rappels-sms-kineogest.csv',
+    ['Patient', 'Téléphone', 'Message', 'Statut', 'Envoyé à'], rows);
+}
+
+function doReset() {
+  if (!confirm('Réinitialiser toutes les données de démonstration ?')) return;
+  try { localStorage.removeItem(OVERRIDES_KEY); } catch (e) {}
+  KinoeDB.reset();
+  renderUI();
+  KinoeUI.toast('Démo réinitialisée.');
+}
+
+function renderUI() {
+  renderStats();
+  renderTable();
+}
+renderUI();
+</script>
 </body>
 </html>

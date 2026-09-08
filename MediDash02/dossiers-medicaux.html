@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dossiers médicaux — KinéoGest</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+:root{--sidebar-bg:#f8f9fc;--sidebar-hover:#e3e6e9;--sidebar-active:#f0f3f8;--sidebar-section:rgba(255,255,255,.8);--sidebar-link:rgba(0,0,0,.65);--accent:#0d6efd;--accent-light:#ccf5ff}
+html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
+#sidebar{position:fixed;top:0;left:0;width:260px;height:100vh;background:var(--sidebar-bg);z-index:1000;display:flex;flex-direction:column;transition:transform .3s;overflow-y:auto;overflow-x:hidden}
+#sidebar::-webkit-scrollbar{width:4px}#sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px}
+.sidebar-brand{padding:24px 20px 18px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:12px}
+.sidebar-brand .brand-icon{width:38px;height:38px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#fff}
+.sidebar-brand .brand-text h5{margin:0;font-size:16px;font-weight:700;color:#fff;line-height:1.2}
+.sidebar-brand .brand-text small{font-size:11px;color:var(--sidebar-section);font-weight:400}
+.sidebar-menu{list-style:none;padding:10px 0;margin:0;flex:1}
+.sidebar-menu .menu-label{padding:16px 20px 6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--sidebar-section)}
+.sidebar-menu li a,.sidebar-menu li .menu-link{display:flex;align-items:center;gap:12px;padding:10px 20px;font-size:13.5px;font-weight:500;color:var(--sidebar-link);text-decoration:none;transition:background .15s,color .15s;cursor:pointer;border:none;background:none;width:100%;text-align:left}
+.sidebar-menu li a:hover,.sidebar-menu li .menu-link:hover{background:var(--sidebar-hover);color:#fff}
+.sidebar-menu li a.active,.sidebar-menu li .menu-link.active{background:var(--sidebar-active);color:#fff}
+.sidebar-menu li a .bi,.sidebar-menu li .menu-link .bi{font-size:18px;width:22px;text-align:center;flex-shrink:0}
+.sidebar-menu .sub-menu{list-style:none;padding:0;margin:0;max-height:0;overflow:hidden;transition:max-height .3s;background:rgba(0,0,0,.12)}
+.sidebar-menu .sub-menu.show{max-height:600px}
+.sidebar-menu .sub-menu li a{padding:8px 20px 8px 54px;font-size:13px}
+.sidebar-menu .menu-link .arrow{margin-left:auto;transition:transform .25s;font-size:12px}
+.sidebar-menu .menu-link[aria-expanded="true"] .arrow{transform:rotate(90deg)}
+.sidebar-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,.06);font-size:11px;color:var(--sidebar-section)}
+.sidebar-upgrade{margin:0 14px 14px;background:rgba(15,118,110,.15);border-radius:10px;padding:12px;font-size:12px;color:var(--accent-light)}
+.sidebar-upgrade b{display:block;margin-bottom:4px;color:#fff;font-size:13px}
+#content{margin-left:260px;min-height:100vh;background:#f4f6f9}
+.topbar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #e9ecef;padding:0 24px;height:56px;display:flex;align-items:center;gap:14px}
+.topbar .search{flex:1;background:#f4f6f9;border:1px solid #e9ecef;border-radius:8px;padding:9px 14px;font-size:13px;max-width:420px;color:#636e72}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.topbar .avatar{width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px}
+.hamburger{display:none;background:none;border:none;font-size:22px;cursor:pointer;color:#333}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin:20px 0 14px;flex-wrap:wrap;gap:10px}
+.page-header h1{font-size:22px;font-weight:700;margin:0}
+.page-header small{color:#636e72;font-size:13px}
+.card-panel{border:none;border-radius:10px;box-shadow:0 1px 3px rgba(15,23,42,.08);overflow:hidden}
+.card-panel .panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e9ecef}
+.card-panel .panel-head h6{margin:0;font-size:14px;font-weight:700}
+.card-panel .panel-head a{font-size:12px;color:var(--accent);text-decoration:none;font-weight:600}
+.card-panel table th{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#636e72;background:#f8fafc;border-bottom:1px solid #e9ecef;padding:10px 14px;font-weight:600}
+.card-panel table td{padding:11px 14px;font-size:13px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.card-panel table tr:last-child td{border-bottom:none}
+.badge-status{font-size:11px;font-weight:600;border-radius:20px;padding:4px 10px}
+.badge-ok{background:#dcfce7;color:#16a34a}
+.badge-warn{background:#fef3c7;color:#d97706}
+.badge-sms{background:#e0f2fe;color:#0369a1}
+.badge-gray{background:#f1f5f9;color:#64748b}
+.badge-rh{background:#ede9fe;color:#7c3aed}
+.badge-danger{background:#fee2e2;color:#dc2626}
+.action-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 6px}
+.action-view{color:var(--accent)}.action-edit{color:#64748b}.action-del{color:#dc2626}
+.emp-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-right:8px;vertical-align:middle}
+.demo-notice{background:#fef3c7;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:10px 16px;font-size:13px;display:flex;align-items:center;gap:10px}
+.inv-view-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #e9ecef;font-size:13.5px}
+.inv-view-row:last-child{border-bottom:none}
+.main-footer{padding:18px 24px;border-top:1px solid #e9ecef;font-size:12px;color:#636e72;text-align:center}
+.notes-cell{max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:992px){#sidebar{transform:translateX(-100%)}#sidebar.show{transform:translateX(0)}#content{margin-left:0}.hamburger{display:block}}
+@media print{#sidebar,.topbar,.hamburger,.demo-notice,.main-footer,.page-header,.panel-head,.row.g-3.mb-3{display:none!important}#content{margin:0!important;padding:0!important}.card-panel{border:none;box-shadow:none}}
+</style>
+</head>
+<body>
+
+<aside id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">K</div>
+    <div class="brand-text"><h5>KinéoGest</h5><small>Cabinet de kinésithérapie</small></div>
+  </div>
+  <ul class="sidebar-menu">
+    <li class="menu-label">Menu</li>
+    <li><a href="index.html" class="menu-link"><i class="bi bi-grid-1x2-fill"></i> Tableau de bord</a></li>
+    <li class="menu-label">Gestion</li>
+    <li>
+      <button class="menu-link" data-bs-toggle="collapse" data-bs-target="#sub-planning" aria-expanded="false"><i class="bi bi-calendar2-week"></i> Planning <i class="bi bi-chevron-right arrow"></i></button>
+      <ul class="sub-menu collapse" id="sub-planning">
+        <li><a href="rendez-vous.html"><i class="bi bi-calendar-check"></i> Rendez-vous</a></li>
+        <li><a href="emploi-du-temps.html"><i class="bi bi-calendar-range"></i> Emploi du temps</a></li>
+        <li><a href="rappels-sms.html"><i class="bi bi-bell"></i> Rappels SMS</a></li>
+      </ul>
+    </li>
+    <li>
+      <button class="menu-link" data-bs-toggle="collapse" data-bs-target="#sub-patients" aria-expanded="true"><i class="bi bi-people"></i> Patients <i class="bi bi-chevron-right arrow"></i></button>
+      <ul class="sub-menu collapse show" id="sub-patients">
+        <li><a href="nouveau-patient.html"><i class="bi bi-person-plus"></i> Nouveau patient</a></li>
+        <li><a href="dossiers-medicaux.html" class="active"><i class="bi bi-journal-text"></i> Dossiers médicaux</a></li>
+        <li><a href="rechercher.html"><i class="bi bi-search"></i> Rechercher</a></li>
+      </ul>
+    </li>
+    <li><a href="employes.html" class="menu-link"><i class="bi bi-person-gear"></i> Employés</a></li>
+    <li><a href="documents.html" class="menu-link"><i class="bi bi-folder2-open"></i> Documents</a></li>
+    <li><a href="stock.html" class="menu-link"><i class="bi bi-box-seam"></i> Stock</a></li>
+    <li class="menu-label">Administration</li>
+    <li>
+      <button class="menu-link" data-bs-toggle="collapse" data-bs-target="#sub-facturation" aria-expanded="false"><i class="bi bi-cash-stack"></i> Facturation <i class="bi bi-chevron-right arrow"></i></button>
+      <ul class="sub-menu collapse" id="sub-facturation">
+        <li><a href="factures.html"><i class="bi bi-receipt"></i> Factures</a></li>
+        <li><a href="paiements.html"><i class="bi bi-credit-card"></i> Paiements</a></li>
+        <li><a href="rapports.html"><i class="bi bi-graph-up-arrow"></i> Rapports</a></li>
+      </ul>
+    </li>
+    <li><a href="rapports.html" class="menu-link"><i class="bi bi-bar-chart-line"></i> Rapports</a></li>
+    <li><a href="parametres.html" class="menu-link"><i class="bi bi-gear"></i> Paramètres</a></li>
+    <li class="menu-label">Info</li>
+    <li><a href="../index.html" class="menu-link"><i class="bi bi-arrow-left-circle"></i> Retour Portfolio</a></li>
+  </ul>
+  <div class="sidebar-upgrade"><b><i class="bi bi-info-circle"></i> Démo interactive</b>Chaque rubrique liste vos données réelles. Personnalisable.</div>
+  <div class="sidebar-footer">© 2026 KinéoGest</div>
+</aside>
+
+<div id="content">
+  <header class="topbar">
+    <button class="hamburger d-lg-none" onclick="document.getElementById('sidebar').classList.toggle('show')">☰</button>
+    <input type="text" class="search" placeholder="🔍 Rechercher un patient, un rendez-vous, un document…" readonly>
+    <div class="right">
+      <a href="#" class="text-decoration-none" style="font-size:20px;color:#636e72"><i class="bi bi-bell"></i></a>
+      <a href="#" class="text-decoration-none" style="font-size:20px;color:#636e72"><i class="bi bi-envelope"></i></a>
+      <div class="avatar">RK</div>
+    </div>
+  </header>
+
+  <div class="container-fluid px-4">
+    <div class="page-header">
+      <div>
+        <h1>Dossiers médicaux</h1>
+        <small>Dossiers de tous les patients enregistrés</small>
+      </div>
+      <button class="btn btn-sm btn-outline-secondary" onclick="window.print()"><i class="bi bi-printer me-1"></i> Imprimer</button><a href="#" onclick="exportCSV();return false;" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download me-1"></i> Exporter</a>
+    </div>
+
+    <div class="demo-notice mb-3">
+      <i class="bi bi-info-circle"></i>
+      <span>Maquette de démonstration — données fictives. Vos modifications sont enregistrées localement, bouton <b>Réinitialiser</b> pour restaurer la démo.</span>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-4">
+        <div class="input-group">
+          <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+          <input type="text" id="fSearch" class="form-control" placeholder="Rechercher par nom, prénom…" oninput="renderTable()">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <select id="fTraitement" class="form-select" onchange="renderTable()">
+          <option value="">Tous les traitements</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select id="fTherapeute" class="form-select" onchange="renderTable()">
+          <option value="">Tous les thérapeutes</option>
+        </select>
+      </div>
+      <div class="col-md-2 d-flex align-items-center justify-content-end">
+        <a href="#" onclick="KinoeUI.resetDemo('dossiers','Dossiers médicaux');return false;" style="color:#dc2626;font-size:13px"><i class="bi bi-arrow-counterclockwise me-1"></i>Réinitialiser</a>
+      </div>
+    </div>
+
+    <div class="card-panel">
+      <div class="panel-head">
+        <h6><i class="bi bi-journal-text me-2"></i>Dossiers patients <span class="badge bg-secondary ms-2" style="font-size:11px" id="dosCount">0</span></h6>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>Âge</th>
+              <th>Dernière visite</th>
+              <th>Traitement</th>
+              <th>Thérapeute</th>
+              <th>Équipe</th>
+              <th>Notes</th>
+              <th style="width:90px">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="dosBody"></tbody>
+        </table>
+        <div id="dosEmpty" class="text-center py-5" style="display:none">
+          <i class="bi bi-inbox" style="font-size:34px;color:#cbd5e1"></i>
+          <div class="mt-2 text-muted">Aucun dossier ne correspond aux filtres.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-footer">
+      © 2026 KinéoGest — Application de démonstration. Données 100% fictives.
+    </div>
+  </div>
+</div>
+
+<!-- Styles localisés (équipe de suivi, historique) -->
+<style>
+.team-avatar{width:28px;height:28px;font-size:10px;cursor:default}
+.team-referent{outline:2px solid var(--accent);outline-offset:1px}
+.hist-item{padding:9px 11px;border:1px solid #eef2f7;border-left:3px solid var(--accent);border-radius:8px;margin-bottom:8px;background:#fff}
+</style>
+
+<!-- ===== MODAL Modifier ===== -->
+<div class="modal fade" id="dosModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="dosModalTitle">Modifier le dossier</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="dsPatient">
+        <div class="row g-3">
+          <div class="col-4">
+            <label class="form-label">Âge</label>
+            <input id="dsAge" type="number" min="0" class="form-control">
+          </div>
+          <div class="col-4">
+            <label class="form-label">Sexe</label>
+            <select id="dsSexe" class="form-select">
+              <option>F</option><option>M</option>
+            </select>
+          </div>
+          <div class="col-4">
+            <label class="form-label">Dernière visite</label>
+            <input id="dsVisite" type="text" class="form-control" placeholder="07/09/2026">
+          </div>
+        </div>
+        <div class="row g-3 mt-0">
+          <div class="col-6">
+            <label class="form-label">Traitement</label>
+            <select id="dsTraitement" class="form-select"></select>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Thérapeute</label>
+            <select id="dsTherapeute" class="form-select"></select>
+          </div>
+        </div>
+        <div class="mt-3">
+          <label class="form-label">Notes cliniques</label>
+          <textarea id="dsNotes" class="form-control" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm" style="background:var(--accent);color:#fff" onclick="saveDossier()"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL Vue détaillée ===== -->
+<div class="modal fade" id="viewModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold" id="viewNom"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="inv-view-row"><span class="text-muted">Âge / Sexe</span><span class="fw-semibold" id="viewAge"></span></div>
+        <div class="inv-view-row"><span class="text-muted">Dernière visite</span><span class="fw-semibold" id="viewVisite"></span></div>
+        <div class="inv-view-row"><span class="text-muted">Traitement</span><span id="viewTraitement"></span></div>
+        <div class="inv-view-row"><span class="text-muted">Référent</span><span class="fw-semibold" id="viewTherapeute"></span></div>
+        <div class="inv-view-row"><span class="text-muted">Assurance</span><span class="fw-semibold" id="viewAssurance"></span></div>
+        <div class="mt-3">
+          <div class="text-muted" style="font-size:12px;font-weight:600">Prescription active — séances restantes</div>
+          <div id="viewPrescription" class="mt-1"></div>
+        </div>
+        <div class="mt-3">
+          <div class="text-muted" style="font-size:12px;font-weight:600">Équipe de suivi</div>
+          <div id="viewTeam" class="mt-1 d-flex flex-wrap gap-2 align-items-center"></div>
+        </div>
+        <div class="mt-3">
+          <div class="text-muted" style="font-size:12px;font-weight:600">Historique des interventions</div>
+          <div id="viewHist" class="mt-1"></div>
+        </div>
+        <div class="mt-3">
+          <div class="text-muted" style="font-size:12px;font-weight:600">Notes cliniques</div>
+          <div id="viewNotes" class="mt-1" style="font-size:13.5px"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-primary d-none" id="intOpenBtn" onclick="openIntForm(currentPatientId)"><i class="bi bi-plus-lg me-1"></i>Ajouter une intervention</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL Nouvelle intervention ===== -->
+<div class="modal fade" id="intModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">Nouvelle intervention</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="intPatient">
+        <div class="mb-3">
+          <div class="form-label" style="font-size:13px;font-weight:600">Patient</div>
+          <div class="fw-semibold" id="intPatientNom"></div>
+        </div>
+        <div class="row g-3">
+          <div class="col-4">
+            <label class="form-label" style="font-size:13px">Date</label>
+            <input id="intDate" type="text" class="form-control" placeholder="07/09/2026">
+          </div>
+          <div class="col-4">
+            <label class="form-label" style="font-size:13px">Type</label>
+            <input id="intType" class="form-control" list="intTypeList" placeholder="Séance">
+            <datalist id="intTypeList">
+              <option>Séance</option>
+              <option>Bilan</option>
+              <option>Évaluation</option>
+              <option>Compte rendu</option>
+              <option>Reprise du suivi</option>
+            </datalist>
+          </div>
+          <div class="col-4">
+            <label class="form-label" style="font-size:13px">Durée (min)</label>
+            <input id="intDuree" type="number" min="5" value="30" class="form-control">
+          </div>
+        </div>
+        <div class="mt-3">
+          <label class="form-label" style="font-size:13px">Compte rendu / note</label>
+          <textarea id="intNote" class="form-control" rows="3" placeholder="Ce que vous avez fait lors de cette prise en charge…"></textarea>
+        </div>
+        <div class="form-text mt-2"><i class="bi bi-people"></i> L'intervention est horodatée et attribuée à son auteur dans l'historique du patient — même si un autre kiné assure le suivi. Choisir <b>Reprise du suivi</b> fait basculer le référent du dossier vers vous.</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm" style="background:var(--accent);color:#fff" onclick="saveIntervention()"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+  <div id="ktoast" class="toast align-items-center" role="status">
+    <div class="d-flex">
+      <div class="toast-body" id="ktoastBody"></div>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/db.js?v=3"></script>
+<script src="js/ui.js?v=3"></script>
+<script src="js/auth.js?v=3"></script>
+<script>
+if (!KinoeAuth.protect(['admin', 'secretaire', 'kine'])) throw new Error('auth');
+KinoeAuth.hook();
+</script>
+<script>
+var TRAITEMENTS = [
+  'Rééducation genou', 'Kiné dos', 'Rééducation sportive', 'Kiné respiratoire',
+  'Masso-kinésithérapie', 'Rééducation pédiatrique', 'Neurologie',
+  'Rééducation cheville', 'Rééducation main', 'Masso-thérapie', 'Suivi post-opératoire'
+];
+
+function renderTable() {
+  var q = document.getElementById('fSearch').value.trim().toLowerCase();
+  var fTraitement = document.getElementById('fTraitement').value;
+  var fTherapeute = document.getElementById('fTherapeute').value;
+  var list = KinoeDB.dossiers().filter(function (d) {
+    if (fTraitement && d.traitement !== fTraitement) return false;
+    if (fTherapeute && d.therapeuteId !== fTherapeute) return false;
+    if (q && d.patient && d.patient.nom.toLowerCase().indexOf(q) === -1) return false;
+    return true;
+  });
+  var body = document.getElementById('dosBody');
+  var empty = document.getElementById('dosEmpty');
+  document.getElementById('dosCount').textContent = list.length;
+  body.innerHTML = '';
+  empty.style.display = list.length ? 'none' : 'block';
+  list.forEach(function (d) {
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><span class="emp-avatar">' + (d.patient ? d.patient.initiales : '—') + '</span>' + (d.patient ? d.patient.nom : '(inconnu)') + '</td>' +
+      '<td>' + d.age + ' ans — ' + d.sexe + '</td>' +
+      '<td>' + d.derniereVisite + '</td>' +
+      '<td>' + KinoeUI.badgeSpecialite(d.traitement) + '</td>' +
+      '<td>' + (d.therapeute ? d.therapeute.nom : '—') + '</td>' +
+      '<td>' + teamChips(d.patientId) + '</td>' +
+      '<td class="text-muted notes-cell" title="' + d.notes.replace(/"/g, '&quot;') + '">' + d.notes + '</td>' +
+      '<td style="white-space:nowrap">' +
+        '<button class="action-btn action-view" title="Voir" onclick="openView(\'' + d.patientId + '\')"><i class="bi bi-eye"></i></button>' +
+        '<button class="action-btn action-edit" title="Modifier" onclick="openEdit(\'' + d.patientId + '\')"><i class="bi bi-pencil-square"></i></button>' +
+      '</td>';
+    body.appendChild(tr);
+  });
+}
+
+function teamChips(patientId) {
+  var eq = KinoeDB.equipe(patientId);
+  if (!eq.length) return '—';
+  var el = '<span class="d-inline-flex gap-1 align-items-center">';
+  eq.forEach(function (m) {
+    el += '<span class="emp-avatar team-avatar' + (m.referent ? ' team-referent' : '') + '" title="' + m.nom + (m.referent ? ' — référent' : '') + ' · ' + m.interventions + ' intervention(s)">' + m.initiales + '</span>';
+  });
+  el += '</span>';
+  return el;
+}
+
+function fillSelects() {
+  var cur = KinoeAuth.current();
+  var isKine = cur && cur.role === 'kine';
+  var ft = document.getElementById('fTraitement');
+  TRAITEMENTS.forEach(function (t) {
+    var o = document.createElement('option'); o.value = t; o.textContent = t; ft.appendChild(o);
+  });
+  var st = document.getElementById('dsTraitement');
+  st.innerHTML = '';
+  TRAITEMENTS.forEach(function (t) {
+    var o = document.createElement('option'); o.value = t; o.textContent = t; st.appendChild(o);
+  });
+  var fth = document.getElementById('fTherapeute');
+  var sth = document.getElementById('dsTherapeute');
+  KinoeDB.employes().forEach(function (e) {
+    if (e.role === 'Kinésithérapeute') {
+      var o1 = document.createElement('option'); o1.value = e.id; o1.textContent = e.nom; fth.appendChild(o1);
+      var o2 = document.createElement('option'); o2.value = e.id; o2.textContent = e.nom; sth.appendChild(o2);
+    }
+  });
+  /* Accès partagé : le filtre thérapeute liste toute l'équipe.
+     Seul le référent du dossier reste verrouillé pour un kiné (réaffectation = admin/secrétaire). */
+  sth.disabled = isKine;
+}
+
+function openEdit(patientId) {
+  var d = KinoeDB.dossier(patientId);
+  if (!d) return;
+  document.getElementById('dosModalTitle').textContent = 'Modifier le dossier — ' + (d.patient ? d.patient.nom : patientId);
+  document.getElementById('dsPatient').value = patientId;
+  document.getElementById('dsAge').value = d.age;
+  document.getElementById('dsSexe').value = d.sexe;
+  document.getElementById('dsVisite').value = d.derniereVisite;
+  document.getElementById('dsTraitement').value = d.traitement;
+  document.getElementById('dsTherapeute').value = d.therapeuteId;
+  document.getElementById('dsNotes').value = d.notes;
+  KinoeUI.openModal('dosModal');
+}
+
+function saveDossier() {
+  var patientId = document.getElementById('dsPatient').value;
+  var data = {
+    age: document.getElementById('dsAge').value,
+    sexe: document.getElementById('dsSexe').value,
+    derniereVisite: document.getElementById('dsVisite').value.trim(),
+    traitement: document.getElementById('dsTraitement').value,
+    therapeuteId: document.getElementById('dsTherapeute').value,
+    notes: document.getElementById('dsNotes').value.trim()
+  };
+  if (!data.derniereVisite) { KinoeUI.toast('Date de visite requise.'); return; }
+  KinoeDB.updateDossier(patientId, data);
+  KinoeUI.closeModal('dosModal');
+  KinoeUI.toast('Dossier mis à jour.');
+  renderUI();
+}
+
+function openView(patientId) {
+  currentPatientId = patientId;
+  var d = KinoeDB.dossier(patientId);
+  if (!d) return;
+  var me = KinoeAuth.current();
+  document.getElementById('viewNom').textContent = d.patient ? d.patient.nom : patientId;
+  document.getElementById('viewAge').textContent = d.age + ' ans — ' + d.sexe;
+  document.getElementById('viewVisite').textContent = d.derniereVisite;
+  document.getElementById('viewTraitement').innerHTML = KinoeUI.badgeSpecialite(d.traitement);
+  document.getElementById('viewTherapeute').textContent = d.therapeute ? d.therapeute.nom : '—';
+  document.getElementById('viewNotes').textContent = d.notes || '—';
+  var a = KinoeDB.assurance(patientId);
+  document.getElementById('viewAssurance').innerHTML = a
+    ? a.organisme + ' <span class="badge" style="background:#eff6ff;color:#1d4ed8;font-size:10px">' + a.taux + '% prise en charge</span> <small class="text-muted">' + a.numero + '</small>'
+    : '<span class="text-muted" style="font-weight:400">Libre — sans prise en charge</span>';
+  document.getElementById('viewPrescription').innerHTML = prescBlock(KinoeDB.prescription(patientId));
+  var team = document.getElementById('viewTeam');
+  team.innerHTML = '';
+  KinoeDB.equipe(patientId).forEach(function (m) { team.appendChild(teamChip(m)); });
+  if (!team.children.length) team.innerHTML = '<div class="text-muted" style="font-size:13px">Aucun intervenant enregistré.</div>';
+  var hist = document.getElementById('viewHist');
+  hist.innerHTML = '';
+  var ints = KinoeDB.interventionsFor(patientId).slice();
+  ints.sort(function (a, b) {
+    function n(s) { var p = String(s).split('/'); return (+p[2]) * 10000 + (+p[1]) * 100 + (+p[0]); }
+    return n(b.date) - n(a.date);
+  });
+  if (!ints.length) {
+    hist.innerHTML = '<div class="text-muted" style="font-size:13px">Aucune intervention enregistrée.</div>';
+  } else {
+    ints.forEach(function (i) { hist.appendChild(histItem(i)); });
+  }
+  var btn = document.getElementById('intOpenBtn');
+  btn.classList.toggle('d-none', !me || me.role === 'secretaire');
+  KinoeUI.openModal('viewModal');
+}
+
+function prescBlock(p) {
+  if (!p) return '<div class="text-muted" style="font-size:13px">Aucune ordonnance active enregistrée pour ce suivi.</div>';
+  var pct = p.seancesTotal ? Math.round(p.seancesUtilisees * 100 / p.seancesTotal) : 0;
+  var over = p.epuisee;
+  var color = over ? '#dc2626' : p.seancesRestantes <= 3 ? '#d97706' : '#0f766e';
+  var badge = over
+    ? '<span class="badge" style="background:#fee2e2;color:#b91c1c;font-size:10px">Quota atteint — renouveler</span>'
+    : '<span class="badge" style="background:#ecfdf5;color:#047857;font-size:10px">En cours</span>';
+  return '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px">' +
+    '<div class="d-flex justify-content-between align-items-start">' +
+      '<div><div class="fw-semibold" style="font-size:13px">' + p.numero + ' — ' + p.medecin + '</div>' +
+      '<div class="text-muted" style="font-size:12px">Prescrite le ' + p.date + ' · Valide jusqu\'au ' + p.validite + '</div></div>' +
+      badge + '</div>' +
+    '<div class="progress mt-2" style="height:8px;background:#e2e8f0"><div class="progress-bar" style="width:' + Math.min(pct, 100) + '%;background:' + color + '"></div></div>' +
+    '<div class="mt-1" style="font-size:12px"><span class="fw-semibold">' + p.seancesUtilisees + '/' + p.seancesTotal + '</span> séances utilisées · <span class="fw-semibold">' + p.seancesRestantes + (p.seancesRestantes > 1 ? ' restantes' : ' restante') + '</span></div>' +
+  '</div>';
+}
+
+function teamChip(m) {
+  var el = document.createElement('span');
+  el.className = 'emp-avatar team-avatar' + (m.referent ? ' team-referent' : '');
+  el.style.cssText = 'width:28px;height:28px;font-size:10px;cursor:default';
+  el.title = m.nom + (m.referent ? ' — référent' : '') + ' · ' + m.interventions + ' intervention(s)';
+  el.textContent = m.initiales;
+  return el;
+}
+
+function histItem(i) {
+  var d = document.createElement('div');
+  d.className = 'hist-item';
+  var reprise = i.type === 'Reprise du suivi';
+  d.innerHTML =
+    '<div class="d-flex align-items-start gap-2">' +
+      '<span class="emp-avatar" style="width:26px;height:26px;font-size:10px">' + ((i.therapeute || {}).initiales || '—') + '</span>' +
+      '<div style="flex:1;font-size:13px">' +
+        '<div class="fw-semibold">' + (i.therapeute ? i.therapeute.nom : '—') +
+        (reprise ? ' <span class="badge" style="background:#fef3c7;color:#92400e;font-size:10px">Reprise du suivi</span>' : '') +
+        ' <small class="text-muted float-end">' + i.date + ' · ' + i.duree + ' min</small></div>' +
+        '<div class="text-muted" style="font-size:11.5px">' + i.type + '</div>' +
+        '<div class="mt-1">' + i.note + '</div>' +
+      '</div>' +
+    '</div>';
+  return d;
+}
+
+var currentPatientId = null;
+function openIntForm(patientId) {
+  currentPatientId = patientId;
+  var dos = KinoeDB.dossier(patientId);
+  document.getElementById('intPatient').value = patientId;
+  document.getElementById('intPatientNom').textContent = dos && dos.patient ? dos.patient.nom : patientId;
+  document.getElementById('intDate').value = todayStr();
+  document.getElementById('intType').value = '';
+  document.getElementById('intDuree').value = 30;
+  document.getElementById('intNote').value = '';
+  KinoeUI.openModal('intModal');
+}
+function todayStr() {
+  var n = new Date();
+  return String(n.getDate()).padStart(2, '0') + '/' + String(n.getMonth() + 1).padStart(2, '0') + '/' + n.getFullYear();
+}
+function saveIntervention() {
+  var patientId = document.getElementById('intPatient').value;
+  var date = document.getElementById('intDate').value.trim();
+  var type = document.getElementById('intType').value.trim();
+  var duree = document.getElementById('intDuree').value;
+  var note = document.getElementById('intNote').value.trim();
+  var me = KinoeAuth.current();
+  if (!me) return;
+  if (!date) { KinoeUI.toast('⚠️ La date est requise.'); return; }
+  if (!type) { KinoeUI.toast('⚠️ Le type d\'intervention est requis.'); return; }
+  KinoeDB.addIntervention({ patientId: patientId, therapeuteId: me.id, date: date, type: type, duree: duree, note: note });
+  KinoeUI.closeModal('intModal');
+  KinoeUI.toast('Intervention enregistrée dans l\'historique du patient.');
+  renderUI();
+  if (document.getElementById('viewModal').classList.contains('show')) openView(patientId);
+}
+
+function exportCSV() {
+  var rows = KinoeDB.dossiers().map(function (d) {
+    return [d.patient ? d.patient.nom : '', d.age, d.sexe, d.derniereVisite, d.traitement,
+            d.therapeute ? d.therapeute.nom : '', d.notes];
+  });
+  KinoeUI.csvExport('dossiers-medicaux-kineogest.csv',
+    ['Patient', 'Âge', 'Sexe', 'Dernière visite', 'Traitement', 'Thérapeute', 'Notes'], rows);
+}
+
+function renderUI() {
+  renderTable();
+}
+fillSelects();
+renderUI();
+</script>
+</body>
+</html>

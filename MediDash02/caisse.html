@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caisse & Trésorerie — KinéoGest</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--sidebar-bg:#f8f9fc;--sidebar-hover:#e3e6e9;--sidebar-active:#f0f3f8;--sidebar-section:rgba(255,255,255,.8);--sidebar-link:rgba(0,0,0,.65);--accent:#0d6efd;--accent-light:#ccf5ff}
+html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
+#sidebar{position:fixed;top:0;left:0;width:260px;height:100vh;background:var(--sidebar-bg);z-index:1000;display:flex;flex-direction:column;transition:transform .3s;overflow-y:auto;overflow-x:hidden}
+#sidebar::-webkit-scrollbar{width:4px}#sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px}
+.sidebar-brand{padding:24px 20px 18px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:12px}
+.sidebar-brand .brand-icon{width:38px;height:38px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#fff}
+.sidebar-brand .brand-text h5{margin:0;font-size:16px;font-weight:700;color:#fff;line-height:1.2}
+.sidebar-brand .brand-text small{font-size:11px;color:var(--sidebar-section);font-weight:400}
+.sidebar-menu{list-style:none;padding:10px 0;margin:0;flex:1}
+.sidebar-menu .menu-label{padding:16px 20px 6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--sidebar-section)}
+.sidebar-menu li a,.sidebar-menu li .menu-link{display:flex;align-items:center;gap:12px;padding:10px 20px;font-size:13.5px;font-weight:500;color:var(--sidebar-link);text-decoration:none;transition:background .15s,color .15s;cursor:pointer;border:none;background:none;width:100%;text-align:left}
+.sidebar-menu li a:hover,.sidebar-menu li .menu-link:hover{background:var(--sidebar-hover);color:#fff}
+.sidebar-menu li a.active,.sidebar-menu li .menu-link.active{background:var(--sidebar-active);color:#fff}
+.sidebar-menu li a .bi,.sidebar-menu li .menu-link .bi{font-size:18px;width:22px;text-align:center;flex-shrink:0}
+.sidebar-menu .sub-menu{list-style:none;padding:0;margin:0;max-height:0;overflow:hidden;transition:max-height .3s;background:rgba(0,0,0,.12)}
+.sidebar-menu .sub-menu.show{max-height:600px}
+.sidebar-menu .sub-menu li a{padding:8px 20px 8px 54px;font-size:13px}
+.sidebar-menu .menu-link .arrow{margin-left:auto;transition:transform .25s;font-size:12px}
+.sidebar-menu .menu-link[aria-expanded="true"] .arrow{transform:rotate(90deg)}
+.sidebar-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,.06);font-size:11px;color:var(--sidebar-section)}
+.sidebar-upgrade{margin:0 14px 14px;background:rgba(15,118,110,.15);border-radius:10px;padding:12px;font-size:12px;color:var(--accent-light)}
+.sidebar-upgrade b{display:block;margin-bottom:4px;color:#fff;font-size:13px}
+#content{margin-left:260px;min-height:100vh;background:#f4f6f9}
+.topbar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #e9ecef;padding:0 24px;height:56px;display:flex;align-items:center;gap:14px}
+.topbar .search{flex:1;background:#f4f6f9;border:1px solid #e9ecef;border-radius:8px;padding:9px 14px;font-size:13px;max-width:420px;color:#636e72}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.topbar .avatar{width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px}
+.hamburger{display:none;background:none;border:none;font-size:22px;cursor:pointer;color:#333}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin:20px 0 14px;flex-wrap:wrap;gap:10px}
+.page-header h1{font-size:22px;font-weight:700;margin:0}
+.page-header small{color:#636e72;font-size:13px}
+.card-panel{border:none;border-radius:10px;box-shadow:0 1px 3px rgba(15,23,42,.08);overflow:hidden}
+.card-panel .panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e9ecef}
+.card-panel .panel-head h6{margin:0;font-size:14px;font-weight:700}
+.card-panel .panel-head a{font-size:12px;color:var(--accent);text-decoration:none;font-weight:600}
+.card-panel table th{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#636e72;background:#f8fafc;border-bottom:1px solid #e9ecef;padding:10px 14px;font-weight:600;white-space:nowrap}
+.card-panel table td{padding:11px 14px;font-size:13px;border-bottom:1px solid #f1f5f9;vertical-align:middle;white-space:nowrap}
+.card-panel table tr:last-child td{border-bottom:none}
+.badge-status{font-size:11px;font-weight:600;border-radius:20px;padding:4px 10px}
+.badge-ok{background:#dcfce7;color:#16a34a}
+.badge-warn{background:#fef3c7;color:#d97706}
+.badge-rh{background:#ede9fe;color:#7c3aed}
+.badge-danger{background:#fee2e2;color:#dc2626}
+.emp-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-right:8px;vertical-align:middle}
+.demo-notice{background:#fef3c7;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:10px 16px;font-size:13px;display:flex;align-items:center;gap:10px}
+.main-footer{padding:18px 24px;border-top:1px solid #e9ecef;font-size:12px;color:#636e72;text-align:center}
+.action-btn{font-size:15px;padding:4px 7px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:transparent;border:none;transition:background .15s}
+.action-btn:hover{background:#eef2f7}
+.action-view{color:#636e72}.action-view:hover{color:var(--accent)}
+.qty-btn{border:1px solid #e2e8f0;background:#fff;border-radius:6px;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;color:#475569;cursor:pointer}
+.qty-btn:hover{background:#f1f5f9}
+.qty-btn.danger:hover{background:#fee2e2;color:#dc2626;border-color:#fecaca}
+.stat-value-lg{font-size:20px;font-weight:700}
+@media(max-width:992px){#sidebar{transform:translateX(-100%)}#sidebar.show{transform:translateX(0)}#content{margin-left:0}.hamburger{display:block}}
+@media print{#sidebar,.topbar,.hamburger,.demo-notice,.main-footer,.page-header,.panel-head,.row.g-3.mb-3,.qty-btn,.action-btn,#balanceBody{display:none!important}#content{margin:0!important;padding:0!important}.card-panel{border:none;box-shadow:none}}
+</style>
+</head>
+<body>
+<aside id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">K</div>
+    <div class="brand-text"><h5>KinéoGest</h5><small>Cabinet de kinésithérapie</small></div>
+  </div>
+  <ul class="sidebar-menu">
+    <li class="menu-label">Menu</li>
+    <li><a href="index.html" class="menu-link"><i class="bi bi-grid-1x2-fill"></i> Tableau de bord</a></li>
+    <li class="menu-label">Gestion</li>
+    <li>
+      <button class="menu-link" data-bs-toggle="collapse" data-bs-target="#sub-planning" aria-expanded="false"><i class="bi bi-calendar2-week"></i> Planning <i class="bi bi-chevron-right arrow"></i></button>
+      <ul class="sub-menu collapse" id="sub-planning">
+        <li><a href="rendez-vous.html"><i class="bi bi-calendar-check"></i> Rendez-vous</a></li>
+        <li><a href="emploi-du-temps.html"><i class="bi bi-calendar-range"></i> Emploi du temps</a></li>
+        <li><a href="rappels-sms.html"><i class="bi bi-bell"></i> Rappels SMS</a></li>
+      </ul>
+    </li>
+    <li>
+      <button class="menu-link" data-bs-toggle="collapse" data-bs-target="#sub-patients" aria-expanded="false"><i class="bi bi-people"></i> Patients <i class="bi bi-chevron-right arrow"></i></button>
+      <ul class="sub-menu collapse" id="sub-patients">
+        <li><a href="nouveau-patient.html"><i class="bi bi-person-plus"></i> Nouveau patient</a></li>
+        <li><a href="dossiers-medicaux.html"><i class="bi bi-journal-text"></i> Dossiers médicaux</a></li>
+        <li><a href="rechercher.html"><i class="bi bi-search"></i> Rechercher</a></li>
+      </ul>
+    </li>
+    <li><a href="employes.html" class="menu-link"><i class="bi bi-person-gear"></i> Employés</a></li>
+    <li><a href="documents.html" class="menu-link"><i class="bi bi-folder2-open"></i> Documents</a></li>
+    <li><a href="stock.html" class="menu-link"><i class="bi bi-box-seam"></i> Stock</a></li>
+    <li class="menu-label">Administration</li>
+    <li>
+      <button class="menu-link" data-bs-toggle="collapse" data-bs-target="#sub-facturation" aria-expanded="true"><i class="bi bi-cash-stack"></i> Facturation <i class="bi bi-chevron-right arrow"></i></button>
+      <ul class="sub-menu collapse show" id="sub-facturation">
+        <li><a href="factures.html"><i class="bi bi-receipt"></i> Factures</a></li>
+        <li><a href="paiements.html"><i class="bi bi-credit-card"></i> Paiements</a></li>
+        <li><a href="rapports.html"><i class="bi bi-graph-up-arrow"></i> Rapports</a></li>
+        <li><a href="caisse.html" class="menu-link active"><i class="bi bi-wallet2"></i> Caisse</a></li>
+      </ul>
+    </li>
+    <li><a href="rapports.html" class="menu-link"><i class="bi bi-bar-chart-line"></i> Rapports</a></li>
+    <li><a href="parametres.html" class="menu-link"><i class="bi bi-gear"></i> Paramètres</a></li>
+    <li class="menu-label">Info</li>
+    <li><a href="../index.html" class="menu-link"><i class="bi bi-arrow-left-circle"></i> Retour Portfolio</a></li>
+  </ul>
+  <div class="sidebar-upgrade"><b><i class="bi bi-info-circle"></i> Démo interactive</b>Chaque rubrique liste vos données réelles. Personnalisable.</div>
+  <div class="sidebar-footer">© 2026 KinéoGest</div>
+</aside>
+
+<div id="content">
+  <header class="topbar">
+    <button class="hamburger d-lg-none" onclick="document.getElementById('sidebar').classList.toggle('show')">☰</button>
+    <input type="text" class="search" placeholder="🔍 Rechercher un patient, un rendez-vous, un document…" readonly>
+    <div class="right">
+      <a href="#" class="text-decoration-none" style="font-size:20px;color:#636e72"><i class="bi bi-bell"></i></a>
+      <a href="#" class="text-decoration-none" style="font-size:20px;color:#636e72"><i class="bi bi-envelope"></i></a>
+      <div class="avatar">AD</div>
+    </div>
+  </header>
+
+  <div class="container-fluid px-4">
+    <div class="page-header">
+      <div>
+        <h1>Caisse & Trésorerie</h1>
+        <small>Encaissements, dépenses et solde du cabinet</small>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-outline-secondary" onclick="window.print()"><i class="bi bi-printer me-1"></i> Imprimer</button>
+        <a href="#" onclick="exportCSV();return false;" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download me-1"></i> Exporter</a>
+        <button class="btn btn-sm" style="background:var(--accent);border-color:var(--accent);color:#fff" data-bs-toggle="modal" data-bs-target="#depModal" onclick="openDepModal()"><i class="bi bi-plus-lg me-1"></i> Nouvelle dépense</button>
+      </div>
+    </div>
+
+    <div class="demo-notice mb-3"><i class="bi bi-info-circle"></i> Ceci est une maquette de démonstration. Les encaissements et dépenses affichés sont fictifs et indiquent la trésorerie simulée du cabinet.</div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-sm-6 col-xl-3">
+        <div class="card card-panel">
+          <div class="card-body p-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="emp-avatar" style="width:40px;height:40px;font-size:16px"><i class="bi bi-wallet2"></i></div>
+              <div>
+                <div class="text-muted" style="font-size:12px">Solde global</div>
+                <div class="stat-value-lg" id="statSolde">…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-3">
+        <div class="card card-panel">
+          <div class="card-body p-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="emp-avatar" style="width:40px;height:40px;font-size:16px;background:#dcfce7;color:#16a34a"><i class="bi bi-cash-coin"></i></div>
+              <div>
+                <div class="text-muted" style="font-size:12px">Encaissements</div>
+                <div class="stat-value-lg" id="statEnc">…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-3">
+        <div class="card card-panel">
+          <div class="card-body p-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="emp-avatar" style="width:40px;height:40px;font-size:16px;background:#fef3c7;color:#d97706"><i class="bi bi-bank2"></i></div>
+              <div>
+                <div class="text-muted" style="font-size:12px">Dépenses totales</div>
+                <div class="stat-value-lg" id="statDep">…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-3">
+        <div class="card card-panel">
+          <div class="card-body p-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="emp-avatar" style="width:40px;height:40px;font-size:16px"><i class="bi bi-calendar2-week"></i></div>
+              <div>
+                <div class="text-muted" style="font-size:12px">Solde du mois</div>
+                <div class="stat-value-lg" id="statMois">…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-panel mb-4">
+      <div class="panel-head">
+        <h6>Journal des dépenses</h6>
+        <div class="d-flex align-items-center gap-3">
+          <a href="#" onclick="showLast7();return false;"><i class="bi bi-calendar-week me-1"></i>7 derniers jours</a>
+          <select id="fCategorie" class="form-select form-select-sm" style="max-width:180px" onchange="renderTable()">
+            <option value="">Toutes les catégories</option>
+          </select>
+          <input type="text" id="filterSearch" class="form-control form-control-sm" style="max-width:200px" placeholder="Filtrer…" oninput="renderTable()">
+          <a href="#" onclick="resetDemo();return false;" style="color:#dc2626"><i class="bi bi-arrow-counterclockwise me-1"></i>Réinitialiser</a>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>N°</th>
+              <th>Libellé</th>
+              <th>Catégorie</th>
+              <th>Mode</th>
+              <th>Montant (MAD)</th>
+              <th style="width:130px">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="depBody"></tbody>
+        </table>
+        <div id="depEmpty" class="text-center py-5" style="display:none">
+          <i class="bi bi-inbox" style="font-size:34px;color:#cbd5e1"></i>
+          <div class="mt-2 text-muted">Aucune dépense ne correspond au filtre.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-panel mb-4">
+      <div class="panel-head">
+        <h6>Balance des 7 derniers jours</h6>
+      </div>
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Encaissé</th>
+              <th>Dépensé</th>
+              <th>Solde jour</th>
+            </tr>
+          </thead>
+          <tbody id="balanceBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer class="main-footer">KinéoGest — maquette de démonstration · Toutes les données affichées sont fictives</footer>
+  </div>
+</div>
+
+<!-- ===== MODAL Nouvelle dépense ===== -->
+<div class="modal fade" id="depModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">Nouvelle dépense</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Date</label>
+          <input id="depDate" type="date" class="form-control">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Libellé</label>
+          <input id="depLib" type="text" class="form-control" placeholder="Ex. Loyer du cabinet — octobre">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Catégorie</label>
+          <select id="depCat" class="form-select">
+            <option>Loyer & charges</option>
+            <option>Consommables</option>
+            <option>Maintenance</option>
+            <option>Assurance</option>
+            <option>Frais fixes</option>
+            <option>Divers</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Montant (MAD)</label>
+          <input id="depMontant" type="number" min="0" step="0.01" class="form-control" placeholder="0">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Mode de paiement</label>
+          <select id="depMode" class="form-select">
+            <option>Espèces</option>
+            <option>Carte bancaire</option>
+            <option>Virement</option>
+            <option>Prélèvement</option>
+            <option>Chèque</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Bénéficiaire</label>
+          <input id="depBene" type="text" class="form-control" placeholder="Fournisseur ou organisme">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Note <span class="text-muted">(optionnel)</span></label>
+          <input id="depNote" type="text" class="form-control" placeholder="Précisions éventuelles">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-sm" style="background:var(--accent);color:#fff" onclick="saveDepense()"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+  <div id="ktoast" class="toast align-items-center" role="status">
+    <div class="d-flex">
+      <div class="toast-body" id="ktoastBody"></div>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/db.js?v=3"></script>
+<script src="js/ui.js?v=3"></script>
+<script src="js/auth.js?v=3"></script>
+<script>
+if (!KinoeAuth.protect(['admin', 'secretaire'])) throw new Error('auth');
+KinoeAuth.hook();
+</script>
+<script>
+function pad2(n) { return String(n).padStart(2, '0'); }
+
+function badgeCat(cat) {
+  var map = { 'Loyer & charges': 'rh', 'Consommables': 'warn', 'Maintenance': 'gray', 'Assurance': 'sms', 'Frais fixes': 'ok' };
+  return '<span class="badge-status badge-' + (map[cat] || 'gray') + '">' + cat + '</span>';
+}
+
+function renderStats() {
+  var s = KinoeDB.statsCaisse();
+  var mois = document.getElementById('statMois');
+  document.getElementById('statSolde').textContent = KinoeUI.fmtMAD(s.solde);
+  document.getElementById('statEnc').textContent = KinoeUI.fmtMAD(s.encaisse);
+  document.getElementById('statDep').textContent = KinoeUI.fmtMAD(s.depenses);
+  document.getElementById('statMois').textContent = KinoeUI.fmtMAD(s.ceMoisSolde);
+  mois.classList.remove('text-success', 'text-danger');
+  if (s.ceMoisSolde < 0) mois.classList.add('text-danger');
+  else mois.classList.add('text-success');
+}
+
+function renderTable(q, cat) {
+  if (q === undefined) q = (document.getElementById('filterSearch').value || '').trim().toLowerCase();
+  if (cat === undefined) cat = document.getElementById('fCategorie').value;
+  var list = KinoeDB.depenses().slice().filter(function (dep) {
+    if (cat && dep.categorie !== cat) return false;
+    if (q && (dep.libelle + ' ' + dep.numero + ' ' + dep.categorie + ' ' + dep.beneficiaire).toLowerCase().indexOf(q) === -1) return false;
+    return true;
+  });
+  var catSel = document.getElementById('fCategorie');
+  catSel.innerHTML = '<option value="">Toutes les catégories</option>';
+  var cats = {};
+  KinoeDB.depenses().forEach(function (dep) { cats[dep.categorie] = 1; });
+  Object.keys(cats).sort().forEach(function (c) {
+    var o = document.createElement('option'); o.value = c; o.textContent = c;
+    if (c === cat) o.selected = true;
+    catSel.appendChild(o);
+  });
+  var body = document.getElementById('depBody');
+  var empty = document.getElementById('depEmpty');
+  body.innerHTML = '';
+  empty.style.display = list.length ? 'none' : 'block';
+  list.forEach(function (dep) {
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>' + dep.date + '</td>' +
+      '<td><strong>' + dep.numero + '</strong></td>' +
+      '<td>' + dep.libelle + '</td>' +
+      '<td>' + badgeCat(dep.categorie) + '</td>' +
+      '<td>' + dep.mode + '</td>' +
+      '<td>' + dep.montant.toLocaleString('fr-FR') + ' MAD</td>' +
+      '<td><button class="action-btn" title="Supprimer" onclick="deleteDep(\'' + dep.numero + '\')" style="color:#dc2626"><i class="bi bi-trash"></i></button></td>';
+    body.appendChild(tr);
+  });
+}
+
+function renderBalance() {
+  var body = document.getElementById('balanceBody');
+  var out = '';
+  var today = new Date();
+  for (var i = 6; i >= 0; i--) {
+    var d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+    var day = pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear();
+    var enc = 0;
+    KinoeDB.paiements().filter(function (p) { return p.date === day && p.statut === 'Reçu'; }).forEach(function (p) { enc += p.montant; });
+    var dep = 0;
+    KinoeDB.depenses().filter(function (x) { return x.date === day; }).forEach(function (x) { dep += x.montant; });
+    var solde = enc - dep;
+    var cls = solde < 0 ? 'text-danger' : 'text-success';
+    out += '<tr>' +
+      '<td>' + day + '</td>' +
+      '<td>' + enc.toLocaleString('fr-FR') + ' MAD</td>' +
+      '<td>' + dep.toLocaleString('fr-FR') + ' MAD</td>' +
+      '<td class="' + cls + '">' + solde.toLocaleString('fr-FR') + ' MAD</td>' +
+      '</tr>';
+  }
+  body.innerHTML = out;
+}
+
+function showLast7() {
+  renderBalance();
+}
+
+function deleteDep(numero) {
+  if (!confirm('Supprimer la dépense ' + numero + ' ?')) return;
+  KinoeDB.deleteDepense(numero);
+  toast('Dépense supprimée.');
+  renderTable();
+  renderStats();
+  renderBalance();
+}
+
+function openDepModal() {
+  var now = new Date();
+  document.getElementById('depDate').value = now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-' + pad2(now.getDate());
+  document.getElementById('depLib').value = '';
+  document.getElementById('depCat').value = 'Loyer & charges';
+  document.getElementById('depMontant').value = '';
+  document.getElementById('depMode').value = 'Espèces';
+  document.getElementById('depBene').value = '';
+  document.getElementById('depNote').value = '';
+}
+
+function saveDepense() {
+  var rawDate = document.getElementById('depDate').value;
+  var libelle = document.getElementById('depLib').value.trim();
+  var montant = parseFloat(document.getElementById('depMontant').value);
+  var categorie = document.getElementById('depCat').value;
+  var mode = document.getElementById('depMode').value;
+  var beneficiaire = document.getElementById('depBene').value.trim();
+  var note = document.getElementById('depNote').value.trim();
+  if (!rawDate) { toast('Saisissez la date.'); return; }
+  if (!libelle) { toast('Saisissez le libellé.'); return; }
+  if (isNaN(montant) || montant <= 0) { toast('Montant invalide.'); return; }
+  var parts = rawDate.split('-');
+  var date = parts[2] + '/' + parts[1] + '/' + parts[0];
+  KinoeDB.addDepense({ date: date, libelle: libelle, categorie: categorie, montant: montant, mode: mode, beneficiaire: beneficiaire, note: note });
+  bootstrap.Modal.getInstance(document.getElementById('depModal')).hide();
+  toast('Dépense enregistrée.');
+  renderTable();
+  renderStats();
+  renderBalance();
+}
+
+function exportCSV() {
+  var rows = KinoeDB.depenses().map(function (dep) {
+    return [dep.date, dep.numero, dep.libelle, dep.categorie, dep.mode, dep.montant, dep.beneficiaire, dep.note];
+  });
+  KinoeUI.csvExport('caisse-kineogest.csv',
+    ['Date', 'N°', 'Libellé', 'Catégorie', 'Mode', 'Montant (MAD)', 'Bénéficiaire', 'Note'], rows);
+}
+
+function resetDemo() {
+  if (!confirm('Réinitialiser toutes les données de démonstration ?')) return;
+  KinoeDB.reset();
+  document.getElementById('filterSearch').value = '';
+  renderTable();
+  renderStats();
+  renderBalance();
+  toast('Données de démonstration restaurées.');
+}
+
+function toast(msg) {
+  var t = document.getElementById('ktoast');
+  var b = document.getElementById('ktoastBody');
+  b.textContent = msg;
+  bootstrap.Toast.getOrCreateInstance(t).show();
+}
+
+renderStats();
+renderTable();
+renderBalance();
+</script>
+</body>
+</html>

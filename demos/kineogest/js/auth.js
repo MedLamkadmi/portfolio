@@ -127,6 +127,7 @@
         'factures.html': ['admin', 'secretaire'],
         'paiements.html': ['admin', 'secretaire'],
         'rapports.html': ['admin', 'secretaire'],
+        'caisse.html': ['admin', 'secretaire'],
         'employes.html': ['admin'],
         'parametres.html': ['admin']
       };

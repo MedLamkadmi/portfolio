@@ -1,6 +1,6 @@
 # Règles d'accès et de fonctionnement — KinéoGest
 
-Version v3 · 07/09/2026 · Document de référence (démo et production)
+Version v4 · 07/09/2026 · Document de référence (démo et production)
 
 ## 1. Rôles
 
@@ -23,6 +23,7 @@ Version v3 · 07/09/2026 · Document de référence (démo et production)
 6. **Confidentialité financière** : les kinés ne voient ni factures, ni paiements, ni salaires, ni rapports financiers consolidés.
 7. **Gestion du personnel** : réservée à l'admin (rôles, salaires, statuts).
 8. Les données sont fictives en démo (localStorage) ; la logique d'accès est identique en production (Supabase).
+9. Module caisse/dépenses ajouté en v4 : nouvelle page `caisse.html`, collection `depenses`, API `depenses()`/`addDepense()`/`deleteDepense()`/`statsCaisse()`. Réservé admin+secretaire.
 
 ## 3. Matrice d'accès par page
 
@@ -41,7 +42,7 @@ Version v3 · 07/09/2026 · Document de référence (démo et production)
 | `stock.html` | ✓ | ✓ | ✗ | Inventaire du cabinet (équipement + consommables), seuils d'alerte | entrées / sorties / inventaire ; PDF + CSV (admin) |
 | `factures.html` | ✓ | ✓ | ✗ | Liste des factures clients + prise en charge assurance | création / statut / encaissement (sec), règles (admin) |
 | `paiements.html` | ✓ | ✓ | ✗ | Journal des paiements | saisie encaissement (sec), validation (admin) |
-| `rapports.html` | ✓ | ✓ | ✗ | Indicateurs financiers + activité | export (admin) |
+| `caisse.html` | ✓ | ✓ | ✗ | Journal des dépenses (caisse / trésorerie), solde, encaissements par jour | admin+secretaire : création/modification/suppression ; kiné : non autorisé (redirection login) |
 | `employes.html` | ✓ | ✗ | ✗ | Équipe, rôles, salaires, statuts | recrutement, salaires, accès |
 | `parametres.html` | ✓ | ✗ | ✗ | Configuration du cabinet | profil, paramètres |
 | `rdv-en-ligne.html` | — | — | — | **Public** (sans connexion) : prise de RDV par le patient | crée le patient et un RDV « En attente » ; kiné auto-affecté selon la disponibilité |

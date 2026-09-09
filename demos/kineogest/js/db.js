@@ -5,7 +5,8 @@
    locale, données fictives. Prêt à être remplacé par une vraie
    base (Supabase / API) sans toucher aux pages.
    Collections : patients, employes, factures, rendezvous,
-   dossiers, documents, paiements, interventions, prescriptions, stock.
+   dossiers, documents, paiements, interventions, prescriptions,
+   stock, depenses.
    ============================================================ */
 (function () {
   var KEY = "kineogest_db_v5";
@@ -215,6 +216,54 @@
     ["DOC-012", "Fiche de paie — août 2026", "RH", "employe", "E001", "01/09/2026", 280]
   ];
 
+  /* Dépenses (caisse / trésorerie) : [numero, date, libelle, catégorie, montant, mode, bénéficiaire, note] */
+  var DEPENSES = [
+    ["DEP-2026-0010", "01/09/2026", "Loyer du cabinet — septembre", "Loyer & charges", 8000, "Virement", "SCI Al Massira", "Paiement mensuel"],
+    ["DEP-2026-0009", "06/09/2026", "Contrat maintenance matériel", "Maintenance", 600, "Virement", "KinéTech Services", "2 tables de massage"],
+    ["DEP-2026-0008", "03/09/2026", "Réassort consommables", "Consommables", 1500, "Espèces", "Fournitures Médicales MA", "Gel, bandages, compresses"],
+    ["DEP-2026-0007", "05/09/2026", "Facture électricité & eau", "Loyer & charges", 950, "Prélèvement", "Lydec", "Août 2026"],
+    ["DEP-2026-0006", "02/09/2026", "Internet + téléphone", "Frais fixes", 300, "Virement", "Maroc Telecom", "Fibre pro"],
+    ["DEP-2026-0005", "02/09/2026", "Assurance professionnelle", "Assurance", 420, "Virement", "Sanlam Assurance", "Prime trimestrielle"],
+    ["DEP-2026-0004", "21/08/2026", "Achat électrodes + cryo-packs", "Consommables", 460, "Carte bancaire", "Pharma Ouest", "Réapprovisionnement"],
+    ["DEP-2026-0003", "10/08/2026", "Révision ondes de choc", "Maintenance", 800, "Virement", "KinéTech Services", "Vérification annuelle"],
+    ["DEP-2026-0002", "01/08/2026", "Loyer du cabinet — août", "Loyer & charges", 8000, "Virement", "SCI Al Massira", "Paiement mensuel"],
+    ["DEP-2026-0001", "01/08/2026", "Internet + téléphone", "Frais fixes", 300, "Virement", "Maroc Telecom", "Fibre pro"]
+  ];
+
+  /* Congés RH : [id, employeeId, dateDebut, dateFin, type, motif, statut, noteAdmin] */
+  var CONGES = [
+    ["CONG-2026-0010", "E002", "01/09/2026", "15/09/2026", "Congé payé", "Vacances été", "En attente", ""],
+    ["CONG-2026-0009", "E003", "01/09/2026", "07/09/2026", "Maladie", "Grippe saisonnière", "Approuvé", "Retour le 08/09"],
+    ["CONG-2026-0008", "E007", "15/09/2026", "30/09/2026", "Formation", "Techniques nouvelles", "En attente", ""],
+    ["CONG-2026-0007", "E002", "03/09/2026", "05/09/2026", "RTT", "Restitution d'heures", "Approuvé", ""],
+    ["CONG-2026-0006", "E005", "10/09/2026", "12/09/2026", "Maladie", "Contraction", "En attente", ""],
+    ["CONG-2026-0005", "E004", "01/09/2026", "30/09/2026", "Congé parental", "Naissance", "Approuvé", ""],
+    ["CONG-2026-0004", "E001", "01/08/2026", "31/08/2026", "Congé été", "Repos estival", "Approuvé", ""],
+    ["CONG-2026-0003", "E007", "01/09/2026", "10/09/2026", "Formation", "Formation continue", "En attente", ""],
+    ["CONG-2026-0002", "E003", "15/08/2026", "20/08/2026", "RTT", "Restitution heures", "Approuvé", ""],
+    ["CONG-2026-0001", "E005", "01/09/2026", "15/09/2026", "Congé payé", "Vacances été", "En attente", ""]
+  ];
+
+  /* Messages WhatsApp/SMS : [numero, employeeId, recipient, date, type, contenu, statut, lice] */
+  var MESSAGES = [
+    ["MSG-2026-0010", "E002", "E004", "01/09/2026", "Rappel", "Rappel RDV 09h - P011", "Envoyé", true],
+    ["MSG-2026-0009", "E003", "E006", "31/08/2026", "Confirm", "RDV confirmé pour le 01/09 à 14h", "Envoyé", true],
+    ["MSG-2026-0008", "E007", "E004", "30/08/2026", "Relance", "Formation la semaine prochaine", "Lu", false],
+    ["MSG-2026-0007", "E002", "E006", "29/08/2026", "Rappel", "Séance de rééducation demain 14h", "Envoyé", true],
+    ["MSG-2026-0006", "E005", "E004", "28/08/2026", "Confirm", "RDV confirmé pour le 30/08 à 10h", "Envoyé", true],
+    ["MSG-2026-0005", "E004", "E001", "27/08/2026", "Info", "Planning modifié pour la semaine", "Envoyé", true],
+    ["MSG-2026-0004", "E003", "E006", "26/08/2026", "Rappel", "Vérifier taux AMO P007", "En attente", false],
+    ["MSG-2026-0003", "E002", "E004", "25/08/2026", "Confirm", "RDV confirmé pour le 28/08 à 11h", "Envoyé", true],
+    ["MSG-2026-0002", "E007", "E004", "24/08/2026", "Relance", "Prochaine formation en septembre", "Lu", false],
+    ["MSG-2026-0001", "E005", "E006", "23/08/2026", "Rappel", "Séance de rééducation le 25/08", "Envoyé", true]
+  ];
+
+  /* Cabinets : [id, nom, responsableId, dateCreation] */
+  var CABINETS = [
+    ["CAB-001", "Cabinet Principal", "E001", "01/09/2026"],
+    ["CAB-002", "Cabinet Secours", "E002", "15/07/2026"]
+  ];
+
   /* Paiements : [numero, patientId, montant, méthode, date, référence, statut] */
   /* statut: "Reçu" | "En attente" | "Remboursé" */
   var PAIEMENTS = [
@@ -379,6 +428,39 @@
     });
   }
 
+  function depenses() {
+    return DEPENSES.map(function (d) {
+      return {
+        numero: d[0], date: d[1], libelle: d[2], categorie: d[3],
+        montant: d[4], mode: d[5], beneficiaire: d[6], note: d[7]
+      };
+    });
+  }
+  function congés() {
+    return CONGES.map(function (c) {
+      return {
+        id: c[0], employeeId: c[1], dateDebut: c[2], dateFin: c[3],
+        type: c[4], motif: c[5], statut: c[6], noteAdmin: c[7]
+      };
+    });
+  }
+  function messages() {
+    return MESSAGES.map(function (m) {
+      return {
+        numero: m[0], employeeId: m[1], employee: employeById(m[1]),
+        recipient: m[2], date: m[3], type: m[4],
+        contenu: m[5], statut: m[6], lice: m[7] || false
+      };
+    });
+  }
+  function cabinets() {
+    return CABINETS.map(function (c) {
+      return {
+        id: c[0], nom: c[1], responsableId: c[2], dateCreation: c[3]
+      };
+    });
+  }
+
   /* Générateurs de numéros auto-incrémentés (au-delà du seed).
      Calcul sur les données stockées (qui incluent les ajouts à
      l'exécution) quand elles existent, sinon sur le seed. */
@@ -399,6 +481,33 @@
       if (n > max) max = n;
     });
     return "DOC-" + pad3(max + 1);
+  }
+  function nextDep() {
+    var src = (load() ? db() : { depenses: depenses() }).depenses;
+    var max = 0;
+    src.forEach(function (d) {
+      var n = parseInt((d.numero || "").replace("DEP-2026-", ""), 10);
+      if (n > max) max = n;
+    });
+    return "DEP-2026-" + pad4(max + 1);
+  }
+  function nextConge() {
+    var src = (load() ? db() : { congés: congés() }).congés;
+    var max = 0;
+    src.forEach(function (c) {
+      var n = parseInt(c[0].replace("CONG-", ""), 10);
+      if (n > max) max = n;
+    });
+    return "CONG-" + String(max + 1).padStart(4, "0");
+  }
+  function nextMsg() {
+    var src = (load() ? db() : { messages: messages() }).messages;
+    var max = 0;
+    src.forEach(function (m) {
+      var n = parseInt(m.numero.replace("MSG-", ""), 10);
+      if (n > max) max = n;
+    });
+    return "MSG-" + String(max + 1).padStart(4, "0");
   }
   function nextRdv() {
     var src = (load() ? db() : { rendezvous: rendezvous() }).rendezvous;
@@ -455,7 +564,10 @@
       patients: patients(), employes: employes(), factures: factures(),
       rendezvous: rendezvous(), dossiers: dossiers(), documents: documents(),
       paiements: paiements(), interventions: interventions(),
-      prescriptions: prescriptions(), stock: stock()
+      prescriptions: prescriptions(), stock: stock(), depenses: depenses(),
+      congés: congés(),
+      messages: messages(),
+      cabinets: cabinets()
     };
   }
 
@@ -479,6 +591,26 @@
       if (!d.stock) {
         /* Migration : base existante sans module stock. */
         d.stock = stock();
+        changed = true;
+      }
+      if (!d.depenses) {
+        /* Migration : base existante sans caisse / dépenses. */
+        d.depenses = depenses();
+        changed = true;
+      }
+      if (!d.congés) {
+        /* Migration : base existante sans module congés. */
+        d.congés = congés();
+        changed = true;
+      }
+      if (!d.messages) {
+        /* Migration : base existante sans module messages. */
+        d.messages = messages();
+        changed = true;
+      }
+      if (!d.cabinets) {
+        /* Migration : base existante sans module cabinets. */
+        d.cabinets = cabinets();
         changed = true;
       }
       if (changed) save(d);
@@ -868,6 +1000,124 @@
       return s;
     },
 
+    /* --- Dépenses / Caisse --- */
+    depenses: function () {
+      return db().depenses.slice().sort(function (a, b) { return b.date.localeCompare(a.date); });
+    },
+    depense: function (numero) {
+      var found = null;
+      db().depenses.forEach(function (d) { if (d.numero === numero) found = d; });
+      return found;
+    },
+    addDepense: function (data) {
+      var d = db();
+      var rec = {
+        numero: nextDep(), date: data.date, libelle: data.libelle,
+        categorie: data.categorie, montant: Math.round(Number(data.montant) || 0),
+        mode: data.mode, beneficiaire: data.beneficiaire || "", note: data.note || ""
+      };
+      d.depenses.push(rec);
+      save(d);
+      return rec;
+    },
+    deleteDepense: function (numero) {
+      var d = db();
+      d.depenses = d.depenses.filter(function (dep) { return dep.numero !== numero; });
+      save(d);
+    },
+    /* Solde de caisse = paiements Reçus − paiements Remboursés − dépenses */
+    statsCaisse: function () {
+      var encaisse = 0, rembourse = 0, enCours = 0, totalDep = 0;
+      var moisEnc = 0, moisDep = 0;
+      db().paiements.forEach(function (p) {
+        if (p.statut === "Reçu") { encaisse += p.montant; if (p.date.indexOf("/09/2026") !== -1) moisEnc += p.montant; }
+        if (p.statut === "Remboursé") { rembourse += p.montant; if (p.date.indexOf("/09/2026") !== -1) moisEnc -= p.montant; }
+        if (p.statut === "En attente") enCours += p.montant;
+      });
+      db().depenses.forEach(function (x) {
+        totalDep += x.montant;
+        if (x.date.indexOf("/09/2026") !== -1) moisDep += x.montant;
+      });
+      return {
+        encaisse: encaisse, depenses: totalDep, solde: encaisse - totalDep,
+        enAttente: enCours, ceMoisEnc: moisEnc, ceMoisDep: moisDep,
+        ceMoisSolde: moisEnc - moisDep
+      };
+    },
+
+    /* --- Stats congés --- */
+    statsCongés: function () {
+      var total = 0, enAttente = 0, approuves = 0, rejete = 0;
+      db().congés.forEach(function (c) {
+        total++;
+        if (c.statut === "En attente") enAttente++;
+        else if (c.statut === "Approuvé") approuves++;
+        else if (c.statut === "Rejeté") rejete++;
+      });
+      return { total, enAttente, approuves, rejete };
+    },
+
+    /* --- Messages WhatsApp/SMS --- */
+    messages: function () {
+      return db().messages.slice().sort(function (a, b) { return b.date.localeCompare(a.date); });
+    },
+    message: function (numero) {
+      var found = null;
+      db().messages.forEach(function (m) { if (m.numero === numero) found = m; });
+      return found;
+    },
+    addMessage: function (data) {
+      var d = db();
+      var rec = {
+        numero: nextMsg(), employeeId: data.employeeId, employee: employeById(data.employeeId),
+        recipient: data.recipient, date: data.date, type: data.type,
+        contenu: data.contenu, statut: data.statut, lice: data.lice || false
+      };
+      d.messages.push(rec);
+      save(d);
+      return rec;
+    },
+    deleteMessage: function (numero) {
+      var d = db();
+      d.messages = d.messages.filter(function (m) { return m.numero !== numero; });
+      save(d);
+    },
+
+    /* --- Cabinets --- */
+    cabinets: function () {
+      return db().cabinets.slice().sort(function (a, b) { return a.nom.localeCompare(b.nom); });
+    },
+    cabinet: function (id) {
+      var found = null;
+      db().cabinets.forEach(function (c) { if (c.id === id) found = c; });
+      return found;
+    },
+
+    /* --- Congés RH --- */
+    congés: function () {
+      return db().congés.slice().sort(function (a, b) { return b.dateDebut.localeCompare(a.dateDebut); });
+    },
+    conge: function (id) {
+      var found = null;
+      db().congés.forEach(function (c) { if (c.id === id) found = c; });
+      return found;
+    },
+    addConge: function (data) {
+      var d = db();
+      var rec = {
+        numero: nextConge(), employeeId: data.employeeId, employee: employeById(data.employeeId),
+        dateDebut: data.dateDebut, dateFin: data.dateFin, type: data.type,
+        motif: data.motif, statut: data.statut, noteAdmin: data.noteAdmin || ""
+      };
+      d.congés.push(rec);
+      save(d);
+      return rec;
+    },
+    deleteConge: function (id) {
+      var d = db();
+      d.congés = d.congés.filter(function (c) { return c.id !== id; });
+      save(d);
+    },
     /* --- Paiements --- */
     paiements: function () {
       return db().paiements.slice().sort(function (a, b) { return b.date.localeCompare(a.date); });
@@ -919,6 +1169,17 @@
         s.nb++;
       });
       return s;
+    },
+
+    /* --- Stats messages --- */
+    statsMessages: function () {
+      var total = 0, enAttente = 0, envoyes = 0;
+      db().messages.forEach(function (m) {
+        total++;
+        if (m.statut === "En attente") enAttente++;
+        else if (m.statut === "Envoyé") envoyes++;
+      });
+      return { total, enAttente, envoyes };
     },
 
     /* --- Factures --- */

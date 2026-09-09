@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Congés RH — KinéoGest</title>
+<title>Messages — KinéoGest</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--sidebar-bg:#f8f9fc;--sidebar-hover:#e3e6e9;--sidebar-active:#f0f3f8;--sidebar-section:rgba(255,255,255,.8);--sidebar-link:rgba(0,0,0,.65);--accent:#0d6efd;--accent-light:#ccf5ff}
+:root{--sidebar-bg:#1e1e2f;--sidebar-hover:#2a2a40;--sidebar-active:#3b3b5c;--sidebar-section:rgba(255,255,255,.4);--sidebar-link:rgba(255,255,255,.6);--accent:#0f766e;--accent-light:#ccfbf1}
 html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
 #sidebar{position:fixed;top:0;left:0;width:260px;height:100vh;background:var(--sidebar-bg);z-index:1000;display:flex;flex-direction:column;transition:transform .3s;overflow-y:auto;overflow-x:hidden}
 #sidebar::-webkit-scrollbar{width:4px}#sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px}
@@ -101,7 +101,8 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
         <li><a href="factures.html"><i class="bi bi-receipt"></i> Factures</a></li>
         <li><a href="paiements.html"><i class="bi bi-credit-card"></i> Paiements</a></li>
         <li><a href="caisse.html"><i class="bi bi-wallet2"></i> Caisse</a></li>
-        <li><a href="conges.html" class="menu-link active"><i class="bi bi-calendar-check"></i> Congés</a></li>
+        <li><a href="conges.html"><i class="bi bi-calendar-check"></i> Congés</a></li>
+        <li><a href="messages.html" class="menu-link active"><i class="bi bi-message"></i> Messages</a></li>
         <li><a href="rapports.html"><i class="bi bi-graph-up-arrow"></i> Rapports</a></li>
       </ul>
     </li>
@@ -128,27 +129,27 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
   <div class="container-fluid px-4">
     <div class="page-header">
       <div>
-        <h1>Congés RH</h1>
-        <small>Gestion des congés du personnel</small>
+        <h1>Messages</h1>
+        <small>WhatsApp / SMS du cabinet</small>
       </div>
       <div class="d-flex gap-2">
         <button class="btn btn-sm btn-outline-secondary" onclick="window.print()"><i class="bi bi-printer me-1"></i> Imprimer</button>
         <a href="#" onclick="exportCSV();return false;" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download me-1"></i> Exporter</a>
-        <button class="btn btn-sm" style="background:var(--accent);border-color:var(--accent);color:#fff" data-bs-toggle="modal" data-bs-target="#congeModal" onclick="openCongeModal()"><i class="bi bi-plus-lg me-1"></i> Nouvelle demande</button>
+        <button class="btn btn-sm" style="background:var(--accent);border-color:var(--accent);color:#fff" data-bs-toggle="modal" data-bs-target="#msgModal" onclick="openMsgModal()"><i class="bi bi-plus-lg me-1"></i> Nouveau message</button>
       </div>
     </div>
 
-    <div class="demo-notice mb-3"><i class="bi bi-info-circle"></i> Ceci est une maquette de démonstration. Les congés affichés sont fictifs et indiquent le suivi RH simulée du cabinet.</div>
+    <div class="demo-notice mb-3"><i class="bi bi-info-circle"></i> Ceci est une maquette de démonstration. Les messages affichés sont fictifs et indiquent la communication simulée du cabinet.</div>
 
     <div class="row g-3 mb-3">
       <div class="col-sm-4 col-xl-3">
         <div class="card card-panel">
           <div class="card-body p-3">
             <div class="d-flex align-items-center gap-3">
-              <div class="emp-avatar" style="width:40px;height:40px;font-size:16px"><i class="bi bi-person"></i></div>
+              <div class="emp-avatar" style="width:40px;height:40px;font-size:16px"><i class="bi bi-reply"></i></div>
               <div>
-                <div class="text-muted" style="font-size:12px">Total congés</div>
-                <div class="stat-value-lg" id="totalConges">0</div>
+                <div class="text-muted" style="font-size:12px">Total messages</div>
+                <div class="stat-value-lg" id="totalMessages">0</div>
               </div>
             </div>
           </div>
@@ -161,7 +162,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
               <div class="emp-avatar" style="width:40px;height:40px;font-size:16px;background:#fef3c7;color:#d97706"><i class="bi bi-clock"></i></div>
               <div>
                 <div class="text-muted" style="font-size:12px">En attente</div>
-                <div class="stat-value-lg" id="enAttente">0</div>
+                <div class="stat-value-lg" id="enAttenteMsg">0</div>
               </div>
             </div>
           </div>
@@ -171,10 +172,10 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
         <div class="card card-panel">
           <div class="card-body p-3">
             <div class="d-flex align-items-center gap-3">
-              <div class="emp-avatar" style="width:40px;height:40px;font-size:16px;background:#dcfce7;color:#16a34a"><i class="bi bi-check-circle"></i></div>
+              <div class="emp-avatar" style="width:40px;height:40px;font-size:16px;background:#dcfce7;color:#16a34a"><i class="bi bi-check"></i></div>
               <div>
-                <div class="text-muted" style="font-size:12px">Approuvés</div>
-                <div class="stat-value-lg" id="approuves">0</div>
+                <div class="text-muted" style="font-size:12px">Envoyés</div>
+                <div class="stat-value-lg" id="envoyesMsg">0</div>
               </div>
             </div>
           </div>
@@ -184,12 +185,12 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
 
     <div class="card card-panel mb-4">
       <div class="panel-head">
-        <h6>Journal des congés</h6>
+        <h6>Journal des messages</h6>
         <div class="d-flex align-items-center gap-3">
-          <select id="filterStatut" class="form-select form-select-sm" style="max-width:180px" onchange="renderTable()">
+          <select id="filterStatutMsg" class="form-select form-select-sm" style="max-width:180px" onchange="renderTable()">
             <option value="">Tous les statuts</option>
           </select>
-          <input type="text" id="filterEmploye" class="form-control form-control-sm" style="max-width:200px" placeholder="Filtrer par employé…" oninput="renderTable()">
+          <input type="text" id="filterDestinataire" class="form-control form-control-sm" style="max-width:200px" placeholder="Filtrer par destinataire…" oninput="renderTable()">
           <a href="#" onclick="resetDemo();return false;" style="color:#dc2626"><i class="bi bi-arrow-counterclockwise me-1"></i>Réinitialiser</a>
         </div>
       </div>
@@ -198,20 +199,19 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
           <thead>
             <tr>
               <th>ID</th>
-              <th>Employé</th>
-              <th>Date début</th>
-              <th>Date fin</th>
+              <th>Destinataire</th>
+              <th>Date</th>
               <th>Type</th>
-              <th>Motif</th>
+              <th>Contenu</th>
               <th>Statut</th>
               <th style="width:130px">Actions</th>
             </tr>
           </thead>
-          <tbody id="congeBody"></tbody>
+          <tbody id="msgBody"></tbody>
         </table>
-        <div id="congeEmpty" class="text-center py-5" style="display:none">
+        <div id="msgEmpty" class="text-center py-5" style="display:none">
           <i class="bi bi-inbox" style="font-size:34px;color:#cbd5e1"></i>
-          <div class="mt-2 text-muted">Aucun congè ne correspond au filtre.</div>
+          <div class="mt-2 text-muted">Aucun message ne correspond au filtre.</div>
         </div>
       </div>
     </div>
@@ -219,49 +219,44 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
     <footer class="main-footer">KinéoGest — maquette de démonstration · Toutes les données affichées sont fictives</footer>
   </div>
 
-<!-- ===== MODAL Nouvelle demande de congé ===== -->
-<div class="modal fade" id="congeModal" tabindex="-1">
+<!-- ===== MODAL Nouveau message ===== -->
+<div class="modal fade" id="msgModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title fw-bold">Nouvelle demande de congé</h5>
+        <h5 class="modal-title fw-bold">Nouveau message</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <div class="mb-3">
-          <label class="form-label">Employé</label>
-          <select id="congeEmp" class="form-select"></select>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Date début</label>
-          <input id="congeDebut" type="date" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Date fin</label>
-          <input id="congeFin" type="date" class="form-control">
+          <label class="form-label">Destinataire</label>
+          <select id="msgDest" class="form-select"></select>
         </div>
         <div class="mb-3">
           <label class="form-label">Type</label>
-          <select id="congeType" class="form-select">
-            <option>Congé payé</option>
-            <option>Maladie</option>
-            <option>RTT</option>
-            <option>Formation</option>
-            <option>Congé parental</option>
+          <select id="msgType" class="form-select">
+            <option>Rappel</option>
+            <option>Confirm</option>
+            <option>Relance</option>
+            <option>Info</option>
           </select>
         </div>
         <div class="mb-3">
-          <label class="form-label">Motif</label>
-          <input id="congeMotif" type="text" class="form-control" placeholder="Ex. Vacances été, grippe…">
+          <label class="form-label">Contenu</label>
+          <textarea id="msgContenu" rows="3" class="form-control" placeholder="Ex. Rappel RDV 09h - P011"></textarea>
         </div>
         <div class="mb-3">
-          <label class="form-label">Note administration <span class="text-muted">(optionnel)</span></label>
-          <input id="congeNote" type="text" class="form-control" placeholder="Précisions">
+          <label class="form-label">Statut</label>
+          <select id="msgStatut" class="form-select">
+            <option>Envoyé</option>
+            <option>En attente</option>
+            <option>Lu</option>
+          </select>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
-        <button type="button" class="btn btn-sm" style="background:var(--accent);color:#fff" onclick="saveConge()"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
+        <button type="button" class="btn btn-sm" style="background:var(--accent);color:#fff" onclick="saveMsg()"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
       </div>
     </div>
   </div>
@@ -288,121 +283,104 @@ KinoeAuth.hook();
 <script>
 function pad2(n) { return String(n).padStart(2, '0'); }
 
-function badgeStat(stat) {
-  var map = { 'En attente': 'warn', 'Approuvé': 'ok', 'Rejeté': 'danger' };
-  return '<span class="badge-status badge-' + (map[stat] || 'gray') + '">' + stat + '</span>';
-}
-
 function renderStats() {
-  var s = KinoeDB.statsCongés();
-  document.getElementById('totalConges').textContent = s.total;
-  document.getElementById('enAttente').textContent = s.enAttente;
-  document.getElementById('approuves').textContent = s.approuves;
-  // color classes
-  var elts = [{id:'totalCgne',cls:'accent'},{id:'enAttente',cls:'warn'},{id:'approuves',cls:'ok'}];
-  // simple: just add text-success/text-danger depending on enAttente vs total
-  var e = s.enAttente, t = s.total;
-  document.getElementById('enAttente').parentElement.parentElement.classList.remove('text-success','text-danger');
-  if (e > 0 && e === t) document.getElementById('enAttente').parentElement.parentElement.classList.add('text-danger');
-  else if (e > 0) document.getElementById('enAttente').parentElement.parentElement.classList.add('text-warning');
+  var msgs = KinoeDB.messages();
+  var total = msgs.length, enAttente = 0, envoyes = 0;
+  msgs.forEach(function (m) {
+    if (m.statut === "En attente") enAttente++;
+    else if (m.statut === "Envoyé") envoyes++;
+  });
+  document.getElementById('totalMessages').textContent = total;
+  document.getElementById('enAttenteMsg').textContent = enAttente;
+  document.getElementById('envoyesMsg').textContent = envoyes;
 }
 
 function renderTable(q, stat) {
-  if (q === undefined) q = (document.getElementById('filterEmploye').value || '').trim().toLowerCase();
-  if (stat === undefined) stat = document.getElementById('filterStatut').value;
-  var list = KinoeDB.congés().slice().filter(function (c) {
-    if (stat && c.statut !== stat) return false;
-    if (q && c.employeeId.toLowerCase().indexOf(q) === -1 && (c.employee ? c.employee.nom.toLowerCase().indexOf(q) === -1 : -1) === -1) return false;
+  if (q === undefined) q = (document.getElementById('filterDestinataire').value || '').trim().toLowerCase();
+  if (stat === undefined) stat = document.getElementById('filterStatutMsg').value;
+  var list = KinoeDB.messages().slice().filter(function (m) {
+    if (stat && m.statut !== stat) return false;
+    if (q && m.recipient.toLowerCase().indexOf(q) === -1) return false;
     return true;
   });
-  var statSel = document.getElementById('filterStatut');
+  var statSel = document.getElementById('filterStatutMsg');
   statSel.innerHTML = '<option value="">Tous les statuts</option>';
   var stats = {};
-  KinoeDB.congés().forEach(function (c) { stats[c.statut] = (stats[c.statut] || 0) + 1; });
+  KinoeDB.messages().forEach(function (m) { stats[m.statut] = (stats[m.statut] || 0) + 1; });
   Object.keys(stats).sort().forEach(function (s) {
     var o = document.createElement('option'); o.value = s; o.textContent = s;
     if (s === stat) o.selected = true;
     statSel.appendChild(o);
   });
-  var employes = {};
-  KinoeDB.employes().forEach(function (e) { employes[e.id] = e.nom; });
-  var body = document.getElementById('congeBody');
-  var empty = document.getElementById('congeEmpty');
+  var body = document.getElementById('msgBody');
+  var empty = document.getElementById('msgEmpty');
   body.innerHTML = '';
   empty.style.display = list.length ? 'none' : 'block';
-  list.forEach(function (c) {
+  list.forEach(function (m) {
     var tr = document.createElement('tr');
-    var empName = (c.employee ? c.employee.nom : c.employeeId);
     tr.innerHTML =
-      '<td>' + c.id + '</td>' +
-      '<td>' + empName + '</td>' +
-      '<td>' + c.dateDebut + '</td>' +
-      '<td>' + c.dateFin + '</td>' +
-      '<td>' + c.type + '</td>' +
-      '<td>' + c.motif + '</td>' +
-      '<td>' + badgeStat(c.statut) + '</td>' +
-      '<td><button class="action-btn" title="Supprimer" onclick="deleteConge(\'' + c.id + '\')" style="color:#dc2626"><i class="bi bi-trash"></i></button></td>';
+      '<td>' + m.numero + '</td>' +
+      '<td>' + (m.employee ? m.employee.nom : m.recipient) + '</td>' +
+      '<td>' + m.date + '</td>' +
+      '<td>' + m.type + '</td>' +
+      '<td>' + (m.contenu ? m.contenu.substring(0, 50) + (m.contenu.length > 50 ? '…' : '') : '—') + '</td>' +
+      '<td>' + '<span class="badge-status badge-' + (m.statut === 'Envoyé' ? 'ok' : m.statut === 'En attente' ? 'warn' : 'gray') + '">' + m.statut + '</span>' + '</td>' +
+      '<td><button class="action-btn" title="Supprimer" onclick="deleteMsg(\'' + m.numero + '\')" style="color:#dc2626"><i class="bi bi-trash"></i></button></td>';
     body.appendChild(tr);
   });
 }
 
-function showLast7() { renderTable(); }
-
-function deleteConge(id) {
-  if (!confirm('Supprimer le congé ' + id + ' ?')) return;
-  KinoeDB.deleteConge(id);
-  toast('Congé supprimé.');
+function deleteMsg(id) {
+  if (!confirm('Supprimer le message ' + id + ' ?')) return;
+  KinoeDB.deleteMessage(id);
+  toast('Message supprimé.');
   renderTable();
   renderStats();
 }
 
-function openCongeModal() {
+function openMsgModal() {
   var employes = KinoeDB.employes();
-  var sel = document.getElementById('congeEmp');
+  var sel = document.getElementById('msgDest');
   sel.innerHTML = '<option value="">Sélectionner un employé</option>';
   employes.forEach(function (e) {
     var o = document.createElement('option'); o.value = e.id; o.textContent = e.nom;
     sel.appendChild(o);
   });
   var now = new Date();
-  document.getElementById('congeDebut').value = now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-' + pad2(now.getDate());
-  document.getElementById('congeFin').value = now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-' + pad2(now.getDate());
-  document.getElementById('congeMotif').value = '';
-  document.getElementById('congeNote').value = '';
-  var bsModal = new bootstrap.Modal(document.getElementById('congeModal'));
+  document.getElementById('msgType').value = 'Rappel';
+  document.getElementById('msgContenu').value = '';
+  document.getElementById('msgStatut').value = 'Envoyé';
+  var bsModal = new bootstrap.Modal(document.getElementById('msgModal'));
   bsModal.show();
 }
 
-function saveConge() {
-  var empId = document.getElementById('congeEmp').value;
-  var debut = document.getElementById('congeDebut').value;
-  var fin = document.getElementById('congeFin').value;
-  var type = document.getElementById('congeType').value;
-  var motif = document.getElementById('congeMotif').value.trim();
-  var note = document.getElementById('congeNote').value.trim();
-  if (!empId) { toast('Sélectionnez un employé.'); return; }
-  if (!debut) { toast('Saisissez la date de début.'); return; }
-  if (fin && fin < debut) { toast('La date de fin doit être >= date début.'); return; }
-  KinoeDB.addConge({ employeeId: empId, dateDebut: debut, dateFin: fin, type: type, motif: motif, statut: 'En attente', noteAdmin: note });
-  bootstrap.Modal.getInstance(document.getElementById('congeModal')).hide();
-  toast('Demande de congé enregistrée.');
+function saveMsg() {
+  var empId = document.getElementById('msgDest').value;
+  var type = document.getElementById('msgType').value;
+  var contenu = document.getElementById('msgContenu').value.trim();
+  var statut = document.getElementById('msgStatut').value;
+  if (!empId) { toast('Sélectionnez un destinataire.'); return; }
+  if (!contenu) { toast('Saisissez le contenu.'); return; }
+  KinoeDB.addMessage({ employeeId: empId, recipient: empId, date: new Date().toLocaleDateString('fr-FR'), type: type, contenu: contenu, statut: statut });
+  bootstrap.Modal.getInstance(document.getElementById('msgModal')).hide();
+  toast('Message enregistré.');
   renderTable();
   renderStats();
 }
 
 function exportCSV() {
-  var rows = KinoeDB.congés().map(function (c) {
-    var emp = c.employee ? c.employee.nom : c.employeeId;
-    return [c.id, emp, c.dateDebut, c.dateFin, c.type, c.motif, c.statut];
+  var rows = KinoeDB.messages().map(function (m) {
+    var recipient = m.employee ? m.employee.nom : m.recipient;
+    return [m.numero, recipient, m.date, m.type, m.contenu, m.statut];
   });
-  KinoeUI.csvExport('conges-kineogest.csv',
-    ['ID', 'Employé', 'Date début', 'Date fin', 'Type', 'Motif', 'Statut'], rows);
+  KinoeUI.csvExport('messages-kineogest.csv',
+    ['ID', 'Destinataire', 'Date', 'Type', 'Contenu', 'Statut'], rows);
 }
 
 function resetDemo() {
   if (!confirm('Réinitialiser toutes les données de démonstration ?')) return;
   KinoeDB.reset();
-  document.getElementById('filterEmploye').value = '';
+  document.getElementById('filterDestinataire').value = '';
   renderTable();
   renderStats();
   toast('Données de démonstration restaurées.');

@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Congés RH — KinéoGest</title>
+<title>Caisse & Trésorerie — KinéoGest</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--sidebar-bg:#f8f9fc;--sidebar-hover:#e3e6e9;--sidebar-active:#f0f3f8;--sidebar-section:rgba(255,255,255,.8);--sidebar-link:rgba(0,0,0,.65);--accent:#0d6efd;--accent-light:#ccf5ff}
+:root{--sidebar-bg:#1e1e2f;--sidebar-hover:#2a2a40;--sidebar-active:#3b3b5c;--sidebar-section:rgba(255,255,255,.4);--sidebar-link:rgba(255,255,255,.6);--accent:#0f766e;--accent-light:#ccfbf1}
 html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;margin:0}
 #sidebar{position:fixed;top:0;left:0;width:260px;height:100vh;background:var(--sidebar-bg);z-index:1000;display:flex;flex-direction:column;transition:transform .3s;overflow-y:auto;overflow-x:hidden}
 #sidebar::-webkit-scrollbar{width:4px}#sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px}
@@ -49,8 +49,8 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
 .badge-status{font-size:11px;font-weight:600;border-radius:20px;padding:4px 10px}
 .badge-ok{background:#dcfce7;color:#16a34a}
 .badge-warn{background:#fef3c7;color:#d97706}
+.badge-rh{background:#ede9fe;color:#7c3aed}
 .badge-danger{background:#fee2e2;color:#dc2626}
-.badge-gray{background:#f1f5f9;color:#64748b}
 .emp-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-right:8px;vertical-align:middle}
 .demo-notice{background:#fef3c7;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:10px 16px;font-size:13px;display:flex;align-items:center;gap:10px}
 .main-footer{padding:18px 24px;border-top:1px solid #e9ecef;font-size:12px;color:#636e72;text-align:center}
@@ -62,7 +62,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
 .qty-btn.danger:hover{background:#fee2e2;color:#dc2626;border-color:#fecaca}
 .stat-value-lg{font-size:20px;font-weight:700}
 @media(max-width:992px){#sidebar{transform:translateX(-100%)}#sidebar.show{transform:translateX(0)}#content{margin-left:0}.hamburger{display:block}}
-@media print{#sidebar,.topbar,.hamburger,.demo-notice,.main-footer,.page-header,.panel-head,.row.g-3.mb-3,.qty-btn,.action-btn{display:none!important}#content{margin:0!important;padding:0!important}.card-panel{border:none;box-shadow:none}}
+@media print{#sidebar,.topbar,.hamburger,.demo-notice,.main-footer,.page-header,.panel-head,.row.g-3.mb-3,.qty-btn,.action-btn,#balanceBody{display:none!important}#content{margin:0!important;padding:0!important}.card-panel{border:none;box-shadow:none}}
 </style>
 </head>
 <body>
@@ -100,9 +100,8 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
       <ul class="sub-menu collapse show" id="sub-facturation">
         <li><a href="factures.html"><i class="bi bi-receipt"></i> Factures</a></li>
         <li><a href="paiements.html"><i class="bi bi-credit-card"></i> Paiements</a></li>
-        <li><a href="caisse.html"><i class="bi bi-wallet2"></i> Caisse</a></li>
-        <li><a href="conges.html" class="menu-link active"><i class="bi bi-calendar-check"></i> Congés</a></li>
         <li><a href="rapports.html"><i class="bi bi-graph-up-arrow"></i> Rapports</a></li>
+        <li><a href="caisse.html" class="menu-link active"><i class="bi bi-wallet2"></i> Caisse</a></li>
       </ul>
     </li>
     <li><a href="rapports.html" class="menu-link"><i class="bi bi-bar-chart-line"></i> Rapports</a></li>
@@ -128,53 +127,66 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
   <div class="container-fluid px-4">
     <div class="page-header">
       <div>
-        <h1>Congés RH</h1>
-        <small>Gestion des congés du personnel</small>
+        <h1>Caisse & Trésorerie</h1>
+        <small>Encaissements, dépenses et solde du cabinet</small>
       </div>
       <div class="d-flex gap-2">
         <button class="btn btn-sm btn-outline-secondary" onclick="window.print()"><i class="bi bi-printer me-1"></i> Imprimer</button>
         <a href="#" onclick="exportCSV();return false;" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download me-1"></i> Exporter</a>
-        <button class="btn btn-sm" style="background:var(--accent);border-color:var(--accent);color:#fff" data-bs-toggle="modal" data-bs-target="#congeModal" onclick="openCongeModal()"><i class="bi bi-plus-lg me-1"></i> Nouvelle demande</button>
+        <button class="btn btn-sm" style="background:var(--accent);border-color:var(--accent);color:#fff" data-bs-toggle="modal" data-bs-target="#depModal" onclick="openDepModal()"><i class="bi bi-plus-lg me-1"></i> Nouvelle dépense</button>
       </div>
     </div>
 
-    <div class="demo-notice mb-3"><i class="bi bi-info-circle"></i> Ceci est une maquette de démonstration. Les congés affichés sont fictifs et indiquent le suivi RH simulée du cabinet.</div>
+    <div class="demo-notice mb-3"><i class="bi bi-info-circle"></i> Ceci est une maquette de démonstration. Les encaissements et dépenses affichés sont fictifs et indiquent la trésorerie simulée du cabinet.</div>
 
     <div class="row g-3 mb-3">
-      <div class="col-sm-4 col-xl-3">
+      <div class="col-sm-6 col-xl-3">
         <div class="card card-panel">
           <div class="card-body p-3">
             <div class="d-flex align-items-center gap-3">
-              <div class="emp-avatar" style="width:40px;height:40px;font-size:16px"><i class="bi bi-person"></i></div>
+              <div class="emp-avatar" style="width:40px;height:40px;font-size:16px"><i class="bi bi-wallet2"></i></div>
               <div>
-                <div class="text-muted" style="font-size:12px">Total congés</div>
-                <div class="stat-value-lg" id="totalConges">0</div>
+                <div class="text-muted" style="font-size:12px">Solde global</div>
+                <div class="stat-value-lg" id="statSolde">…</div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="col-sm-4 col-xl-3">
+      <div class="col-sm-6 col-xl-3">
         <div class="card card-panel">
           <div class="card-body p-3">
             <div class="d-flex align-items-center gap-3">
-              <div class="emp-avatar" style="width:40px;height:40px;font-size:16px;background:#fef3c7;color:#d97706"><i class="bi bi-clock"></i></div>
+              <div class="emp-avatar" style="width:40px;height:40px;font-size:16px;background:#dcfce7;color:#16a34a"><i class="bi bi-cash-coin"></i></div>
               <div>
-                <div class="text-muted" style="font-size:12px">En attente</div>
-                <div class="stat-value-lg" id="enAttente">0</div>
+                <div class="text-muted" style="font-size:12px">Encaissements</div>
+                <div class="stat-value-lg" id="statEnc">…</div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="col-sm-4 col-xl-3">
+      <div class="col-sm-6 col-xl-3">
         <div class="card card-panel">
           <div class="card-body p-3">
             <div class="d-flex align-items-center gap-3">
-              <div class="emp-avatar" style="width:40px;height:40px;font-size:16px;background:#dcfce7;color:#16a34a"><i class="bi bi-check-circle"></i></div>
+              <div class="emp-avatar" style="width:40px;height:40px;font-size:16px;background:#fef3c7;color:#d97706"><i class="bi bi-bank2"></i></div>
               <div>
-                <div class="text-muted" style="font-size:12px">Approuvés</div>
-                <div class="stat-value-lg" id="approuves">0</div>
+                <div class="text-muted" style="font-size:12px">Dépenses totales</div>
+                <div class="stat-value-lg" id="statDep">…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-3">
+        <div class="card card-panel">
+          <div class="card-body p-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="emp-avatar" style="width:40px;height:40px;font-size:16px"><i class="bi bi-calendar2-week"></i></div>
+              <div>
+                <div class="text-muted" style="font-size:12px">Solde du mois</div>
+                <div class="stat-value-lg" id="statMois">…</div>
               </div>
             </div>
           </div>
@@ -184,12 +196,13 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
 
     <div class="card card-panel mb-4">
       <div class="panel-head">
-        <h6>Journal des congés</h6>
+        <h6>Journal des dépenses</h6>
         <div class="d-flex align-items-center gap-3">
-          <select id="filterStatut" class="form-select form-select-sm" style="max-width:180px" onchange="renderTable()">
-            <option value="">Tous les statuts</option>
+          <a href="#" onclick="showLast7();return false;"><i class="bi bi-calendar-week me-1"></i>7 derniers jours</a>
+          <select id="fCategorie" class="form-select form-select-sm" style="max-width:180px" onchange="renderTable()">
+            <option value="">Toutes les catégories</option>
           </select>
-          <input type="text" id="filterEmploye" class="form-control form-control-sm" style="max-width:200px" placeholder="Filtrer par employé…" oninput="renderTable()">
+          <input type="text" id="filterSearch" class="form-control form-control-sm" style="max-width:200px" placeholder="Filtrer…" oninput="renderTable()">
           <a href="#" onclick="resetDemo();return false;" style="color:#dc2626"><i class="bi bi-arrow-counterclockwise me-1"></i>Réinitialiser</a>
         </div>
       </div>
@@ -197,71 +210,101 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
         <table class="table mb-0">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Employé</th>
-              <th>Date début</th>
-              <th>Date fin</th>
-              <th>Type</th>
-              <th>Motif</th>
-              <th>Statut</th>
+              <th>Date</th>
+              <th>N°</th>
+              <th>Libellé</th>
+              <th>Catégorie</th>
+              <th>Mode</th>
+              <th>Montant (MAD)</th>
               <th style="width:130px">Actions</th>
             </tr>
           </thead>
-          <tbody id="congeBody"></tbody>
+          <tbody id="depBody"></tbody>
         </table>
-        <div id="congeEmpty" class="text-center py-5" style="display:none">
+        <div id="depEmpty" class="text-center py-5" style="display:none">
           <i class="bi bi-inbox" style="font-size:34px;color:#cbd5e1"></i>
-          <div class="mt-2 text-muted">Aucun congè ne correspond au filtre.</div>
+          <div class="mt-2 text-muted">Aucune dépense ne correspond au filtre.</div>
         </div>
+      </div>
+    </div>
+
+    <div class="card card-panel mb-4">
+      <div class="panel-head">
+        <h6>Balance des 7 derniers jours</h6>
+      </div>
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Encaissé</th>
+              <th>Dépensé</th>
+              <th>Solde jour</th>
+            </tr>
+          </thead>
+          <tbody id="balanceBody"></tbody>
+        </table>
       </div>
     </div>
 
     <footer class="main-footer">KinéoGest — maquette de démonstration · Toutes les données affichées sont fictives</footer>
   </div>
+</div>
 
-<!-- ===== MODAL Nouvelle demande de congé ===== -->
-<div class="modal fade" id="congeModal" tabindex="-1">
+<!-- ===== MODAL Nouvelle dépense ===== -->
+<div class="modal fade" id="depModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title fw-bold">Nouvelle demande de congé</h5>
+        <h5 class="modal-title fw-bold">Nouvelle dépense</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <div class="mb-3">
-          <label class="form-label">Employé</label>
-          <select id="congeEmp" class="form-select"></select>
+          <label class="form-label">Date</label>
+          <input id="depDate" type="date" class="form-control">
         </div>
         <div class="mb-3">
-          <label class="form-label">Date début</label>
-          <input id="congeDebut" type="date" class="form-control">
+          <label class="form-label">Libellé</label>
+          <input id="depLib" type="text" class="form-control" placeholder="Ex. Loyer du cabinet — octobre">
         </div>
         <div class="mb-3">
-          <label class="form-label">Date fin</label>
-          <input id="congeFin" type="date" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Type</label>
-          <select id="congeType" class="form-select">
-            <option>Congé payé</option>
-            <option>Maladie</option>
-            <option>RTT</option>
-            <option>Formation</option>
-            <option>Congé parental</option>
+          <label class="form-label">Catégorie</label>
+          <select id="depCat" class="form-select">
+            <option>Loyer & charges</option>
+            <option>Consommables</option>
+            <option>Maintenance</option>
+            <option>Assurance</option>
+            <option>Frais fixes</option>
+            <option>Divers</option>
           </select>
         </div>
         <div class="mb-3">
-          <label class="form-label">Motif</label>
-          <input id="congeMotif" type="text" class="form-control" placeholder="Ex. Vacances été, grippe…">
+          <label class="form-label">Montant (MAD)</label>
+          <input id="depMontant" type="number" min="0" step="0.01" class="form-control" placeholder="0">
         </div>
         <div class="mb-3">
-          <label class="form-label">Note administration <span class="text-muted">(optionnel)</span></label>
-          <input id="congeNote" type="text" class="form-control" placeholder="Précisions">
+          <label class="form-label">Mode de paiement</label>
+          <select id="depMode" class="form-select">
+            <option>Espèces</option>
+            <option>Carte bancaire</option>
+            <option>Virement</option>
+            <option>Prélèvement</option>
+            <option>Chèque</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Bénéficiaire</label>
+          <input id="depBene" type="text" class="form-control" placeholder="Fournisseur ou organisme">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Note <span class="text-muted">(optionnel)</span></label>
+          <input id="depNote" type="text" class="form-control" placeholder="Précisions éventuelles">
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
-        <button type="button" class="btn btn-sm" style="background:var(--accent);color:#fff" onclick="saveConge()"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
+        <button type="button" class="btn btn-sm" style="background:var(--accent);color:#fff" onclick="saveDepense()"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
       </div>
     </div>
   </div>
@@ -288,123 +331,141 @@ KinoeAuth.hook();
 <script>
 function pad2(n) { return String(n).padStart(2, '0'); }
 
-function badgeStat(stat) {
-  var map = { 'En attente': 'warn', 'Approuvé': 'ok', 'Rejeté': 'danger' };
-  return '<span class="badge-status badge-' + (map[stat] || 'gray') + '">' + stat + '</span>';
+function badgeCat(cat) {
+  var map = { 'Loyer & charges': 'rh', 'Consommables': 'warn', 'Maintenance': 'gray', 'Assurance': 'sms', 'Frais fixes': 'ok' };
+  return '<span class="badge-status badge-' + (map[cat] || 'gray') + '">' + cat + '</span>';
 }
 
 function renderStats() {
-  var s = KinoeDB.statsCongés();
-  document.getElementById('totalConges').textContent = s.total;
-  document.getElementById('enAttente').textContent = s.enAttente;
-  document.getElementById('approuves').textContent = s.approuves;
-  // color classes
-  var elts = [{id:'totalCgne',cls:'accent'},{id:'enAttente',cls:'warn'},{id:'approuves',cls:'ok'}];
-  // simple: just add text-success/text-danger depending on enAttente vs total
-  var e = s.enAttente, t = s.total;
-  document.getElementById('enAttente').parentElement.parentElement.classList.remove('text-success','text-danger');
-  if (e > 0 && e === t) document.getElementById('enAttente').parentElement.parentElement.classList.add('text-danger');
-  else if (e > 0) document.getElementById('enAttente').parentElement.parentElement.classList.add('text-warning');
+  var s = KinoeDB.statsCaisse();
+  var mois = document.getElementById('statMois');
+  document.getElementById('statSolde').textContent = KinoeUI.fmtMAD(s.solde);
+  document.getElementById('statEnc').textContent = KinoeUI.fmtMAD(s.encaisse);
+  document.getElementById('statDep').textContent = KinoeUI.fmtMAD(s.depenses);
+  document.getElementById('statMois').textContent = KinoeUI.fmtMAD(s.ceMoisSolde);
+  mois.classList.remove('text-success', 'text-danger');
+  if (s.ceMoisSolde < 0) mois.classList.add('text-danger');
+  else mois.classList.add('text-success');
 }
 
-function renderTable(q, stat) {
-  if (q === undefined) q = (document.getElementById('filterEmploye').value || '').trim().toLowerCase();
-  if (stat === undefined) stat = document.getElementById('filterStatut').value;
-  var list = KinoeDB.congés().slice().filter(function (c) {
-    if (stat && c.statut !== stat) return false;
-    if (q && c.employeeId.toLowerCase().indexOf(q) === -1 && (c.employee ? c.employee.nom.toLowerCase().indexOf(q) === -1 : -1) === -1) return false;
+function renderTable(q, cat) {
+  if (q === undefined) q = (document.getElementById('filterSearch').value || '').trim().toLowerCase();
+  if (cat === undefined) cat = document.getElementById('fCategorie').value;
+  var list = KinoeDB.depenses().slice().filter(function (dep) {
+    if (cat && dep.categorie !== cat) return false;
+    if (q && (dep.libelle + ' ' + dep.numero + ' ' + dep.categorie + ' ' + dep.beneficiaire).toLowerCase().indexOf(q) === -1) return false;
     return true;
   });
-  var statSel = document.getElementById('filterStatut');
-  statSel.innerHTML = '<option value="">Tous les statuts</option>';
-  var stats = {};
-  KinoeDB.congés().forEach(function (c) { stats[c.statut] = (stats[c.statut] || 0) + 1; });
-  Object.keys(stats).sort().forEach(function (s) {
-    var o = document.createElement('option'); o.value = s; o.textContent = s;
-    if (s === stat) o.selected = true;
-    statSel.appendChild(o);
+  var catSel = document.getElementById('fCategorie');
+  catSel.innerHTML = '<option value="">Toutes les catégories</option>';
+  var cats = {};
+  KinoeDB.depenses().forEach(function (dep) { cats[dep.categorie] = 1; });
+  Object.keys(cats).sort().forEach(function (c) {
+    var o = document.createElement('option'); o.value = c; o.textContent = c;
+    if (c === cat) o.selected = true;
+    catSel.appendChild(o);
   });
-  var employes = {};
-  KinoeDB.employes().forEach(function (e) { employes[e.id] = e.nom; });
-  var body = document.getElementById('congeBody');
-  var empty = document.getElementById('congeEmpty');
+  var body = document.getElementById('depBody');
+  var empty = document.getElementById('depEmpty');
   body.innerHTML = '';
   empty.style.display = list.length ? 'none' : 'block';
-  list.forEach(function (c) {
+  list.forEach(function (dep) {
     var tr = document.createElement('tr');
-    var empName = (c.employee ? c.employee.nom : c.employeeId);
     tr.innerHTML =
-      '<td>' + c.id + '</td>' +
-      '<td>' + empName + '</td>' +
-      '<td>' + c.dateDebut + '</td>' +
-      '<td>' + c.dateFin + '</td>' +
-      '<td>' + c.type + '</td>' +
-      '<td>' + c.motif + '</td>' +
-      '<td>' + badgeStat(c.statut) + '</td>' +
-      '<td><button class="action-btn" title="Supprimer" onclick="deleteConge(\'' + c.id + '\')" style="color:#dc2626"><i class="bi bi-trash"></i></button></td>';
+      '<td>' + dep.date + '</td>' +
+      '<td><strong>' + dep.numero + '</strong></td>' +
+      '<td>' + dep.libelle + '</td>' +
+      '<td>' + badgeCat(dep.categorie) + '</td>' +
+      '<td>' + dep.mode + '</td>' +
+      '<td>' + dep.montant.toLocaleString('fr-FR') + ' MAD</td>' +
+      '<td><button class="action-btn" title="Supprimer" onclick="deleteDep(\'' + dep.numero + '\')" style="color:#dc2626"><i class="bi bi-trash"></i></button></td>';
     body.appendChild(tr);
   });
 }
 
-function showLast7() { renderTable(); }
-
-function deleteConge(id) {
-  if (!confirm('Supprimer le congé ' + id + ' ?')) return;
-  KinoeDB.deleteConge(id);
-  toast('Congé supprimé.');
-  renderTable();
-  renderStats();
+function renderBalance() {
+  var body = document.getElementById('balanceBody');
+  var out = '';
+  var today = new Date();
+  for (var i = 6; i >= 0; i--) {
+    var d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+    var day = pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear();
+    var enc = 0;
+    KinoeDB.paiements().filter(function (p) { return p.date === day && p.statut === 'Reçu'; }).forEach(function (p) { enc += p.montant; });
+    var dep = 0;
+    KinoeDB.depenses().filter(function (x) { return x.date === day; }).forEach(function (x) { dep += x.montant; });
+    var solde = enc - dep;
+    var cls = solde < 0 ? 'text-danger' : 'text-success';
+    out += '<tr>' +
+      '<td>' + day + '</td>' +
+      '<td>' + enc.toLocaleString('fr-FR') + ' MAD</td>' +
+      '<td>' + dep.toLocaleString('fr-FR') + ' MAD</td>' +
+      '<td class="' + cls + '">' + solde.toLocaleString('fr-FR') + ' MAD</td>' +
+      '</tr>';
+  }
+  body.innerHTML = out;
 }
 
-function openCongeModal() {
-  var employes = KinoeDB.employes();
-  var sel = document.getElementById('congeEmp');
-  sel.innerHTML = '<option value="">Sélectionner un employé</option>';
-  employes.forEach(function (e) {
-    var o = document.createElement('option'); o.value = e.id; o.textContent = e.nom;
-    sel.appendChild(o);
-  });
+function showLast7() {
+  renderBalance();
+}
+
+function deleteDep(numero) {
+  if (!confirm('Supprimer la dépense ' + numero + ' ?')) return;
+  KinoeDB.deleteDepense(numero);
+  toast('Dépense supprimée.');
+  renderTable();
+  renderStats();
+  renderBalance();
+}
+
+function openDepModal() {
   var now = new Date();
-  document.getElementById('congeDebut').value = now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-' + pad2(now.getDate());
-  document.getElementById('congeFin').value = now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-' + pad2(now.getDate());
-  document.getElementById('congeMotif').value = '';
-  document.getElementById('congeNote').value = '';
-  var bsModal = new bootstrap.Modal(document.getElementById('congeModal'));
-  bsModal.show();
+  document.getElementById('depDate').value = now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-' + pad2(now.getDate());
+  document.getElementById('depLib').value = '';
+  document.getElementById('depCat').value = 'Loyer & charges';
+  document.getElementById('depMontant').value = '';
+  document.getElementById('depMode').value = 'Espèces';
+  document.getElementById('depBene').value = '';
+  document.getElementById('depNote').value = '';
 }
 
-function saveConge() {
-  var empId = document.getElementById('congeEmp').value;
-  var debut = document.getElementById('congeDebut').value;
-  var fin = document.getElementById('congeFin').value;
-  var type = document.getElementById('congeType').value;
-  var motif = document.getElementById('congeMotif').value.trim();
-  var note = document.getElementById('congeNote').value.trim();
-  if (!empId) { toast('Sélectionnez un employé.'); return; }
-  if (!debut) { toast('Saisissez la date de début.'); return; }
-  if (fin && fin < debut) { toast('La date de fin doit être >= date début.'); return; }
-  KinoeDB.addConge({ employeeId: empId, dateDebut: debut, dateFin: fin, type: type, motif: motif, statut: 'En attente', noteAdmin: note });
-  bootstrap.Modal.getInstance(document.getElementById('congeModal')).hide();
-  toast('Demande de congé enregistrée.');
+function saveDepense() {
+  var rawDate = document.getElementById('depDate').value;
+  var libelle = document.getElementById('depLib').value.trim();
+  var montant = parseFloat(document.getElementById('depMontant').value);
+  var categorie = document.getElementById('depCat').value;
+  var mode = document.getElementById('depMode').value;
+  var beneficiaire = document.getElementById('depBene').value.trim();
+  var note = document.getElementById('depNote').value.trim();
+  if (!rawDate) { toast('Saisissez la date.'); return; }
+  if (!libelle) { toast('Saisissez le libellé.'); return; }
+  if (isNaN(montant) || montant <= 0) { toast('Montant invalide.'); return; }
+  var parts = rawDate.split('-');
+  var date = parts[2] + '/' + parts[1] + '/' + parts[0];
+  KinoeDB.addDepense({ date: date, libelle: libelle, categorie: categorie, montant: montant, mode: mode, beneficiaire: beneficiaire, note: note });
+  bootstrap.Modal.getInstance(document.getElementById('depModal')).hide();
+  toast('Dépense enregistrée.');
   renderTable();
   renderStats();
+  renderBalance();
 }
 
 function exportCSV() {
-  var rows = KinoeDB.congés().map(function (c) {
-    var emp = c.employee ? c.employee.nom : c.employeeId;
-    return [c.id, emp, c.dateDebut, c.dateFin, c.type, c.motif, c.statut];
+  var rows = KinoeDB.depenses().map(function (dep) {
+    return [dep.date, dep.numero, dep.libelle, dep.categorie, dep.mode, dep.montant, dep.beneficiaire, dep.note];
   });
-  KinoeUI.csvExport('conges-kineogest.csv',
-    ['ID', 'Employé', 'Date début', 'Date fin', 'Type', 'Motif', 'Statut'], rows);
+  KinoeUI.csvExport('caisse-kineogest.csv',
+    ['Date', 'N°', 'Libellé', 'Catégorie', 'Mode', 'Montant (MAD)', 'Bénéficiaire', 'Note'], rows);
 }
 
 function resetDemo() {
   if (!confirm('Réinitialiser toutes les données de démonstration ?')) return;
   KinoeDB.reset();
-  document.getElementById('filterEmploye').value = '';
+  document.getElementById('filterSearch').value = '';
   renderTable();
   renderStats();
+  renderBalance();
   toast('Données de démonstration restaurées.');
 }
 
@@ -417,6 +478,7 @@ function toast(msg) {
 
 renderStats();
 renderTable();
+renderBalance();
 </script>
 </body>
 </html>

@@ -447,7 +447,7 @@
   function messages() {
     return MESSAGES.map(function (m) {
       return {
-        numero: m[0], employeeId: m[1], employee: dbEmployee(m[1]),
+        numero: m[0], employeeId: m[1], employee: employeById(m[1]),
         recipient: m[2], date: m[3], type: m[4],
         contenu: m[5], statut: m[6], lice: m[7] || false
       };

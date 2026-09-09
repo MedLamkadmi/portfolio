@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Caisse & Trésorerie — KinéoGest</title>
+<title>Caisse & Trésorerie — MediDash</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -69,7 +69,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
 <aside id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-icon">K</div>
-    <div class="brand-text"><h5>KinéoGest</h5><small>Cabinet de kinésithérapie</small></div>
+    <div class="brand-text"><h5>MediDash</h5><small>Cabinet de kinésithérapie</small></div>
   </div>
   <ul class="sidebar-menu">
     <li class="menu-label">Menu</li>
@@ -110,7 +110,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
     <li><a href="../index.html" class="menu-link"><i class="bi bi-arrow-left-circle"></i> Retour Portfolio</a></li>
   </ul>
   <div class="sidebar-upgrade"><b><i class="bi bi-info-circle"></i> Démo interactive</b>Chaque rubrique liste vos données réelles. Personnalisable.</div>
-  <div class="sidebar-footer">© 2026 KinéoGest</div>
+  <div class="sidebar-footer">© 2026 MediDash</div>
 </aside>
 
 <div id="content">
@@ -247,7 +247,7 @@ html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;overfl
       </div>
     </div>
 
-    <footer class="main-footer">KinéoGest — maquette de démonstration · Toutes les données affichées sont fictives</footer>
+    <footer class="main-footer">MediDash — maquette de démonstration · Toutes les données affichées sont fictives</footer>
   </div>
 </div>
 
@@ -455,7 +455,7 @@ function exportCSV() {
   var rows = KinoeDB.depenses().map(function (dep) {
     return [dep.date, dep.numero, dep.libelle, dep.categorie, dep.mode, dep.montant, dep.beneficiaire, dep.note];
   });
-  KinoeUI.csvExport('caisse-kineogest.csv',
+  KinoeUI.csvExport('caisse-MediDash.csv',
     ['Date', 'N°', 'Libellé', 'Catégorie', 'Mode', 'Montant (MAD)', 'Bénéficiaire', 'Note'], rows);
 }
 
